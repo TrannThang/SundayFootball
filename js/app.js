@@ -1,0 +1,124 @@
+/* ==========================================================================
+   SUNDAY FOOTBALL - SPA APP CONTROLLER & ROUTER
+   ========================================================================== */
+
+class AppController {
+  constructor() {
+    this.currentPage = 'home';
+  }
+
+  init() {
+    this.setupNavigation();
+    Auth.init();
+    this.navigateTo(this.currentPage);
+  }
+
+  setupNavigation() {
+    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+    navItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        const targetPage = item.getAttribute('data-page');
+        this.navigateTo(targetPage);
+      });
+    });
+  }
+
+  navigateTo(pageId) {
+    this.currentPage = pageId;
+
+    // Update Bottom Nav UI
+    document.querySelectorAll('.bottom-nav .nav-item').forEach(item => {
+      if (item.getAttribute('data-page') === pageId) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+
+    // Hide all views and show active target page
+    document.querySelectorAll('.page-view').forEach(view => {
+      view.classList.remove('active');
+    });
+
+    const targetEl = document.getElementById(`page-${pageId}`);
+    if (targetEl) {
+      targetEl.classList.add('active');
+      window.scrollTo(0, 0);
+
+      // Render page content dynamically
+      this.renderPage(pageId);
+    }
+  }
+
+  renderPage(pageId) {
+    switch (pageId) {
+      case 'home':
+        if (window.HomePage) HomePage.render();
+        break;
+      case 'team':
+        if (window.TeamPage) TeamPage.render();
+        break;
+      case 'squad':
+        if (window.SquadPage) SquadPage.render();
+        break;
+      case 'fund':
+        if (window.FundPage) FundPage.render();
+        break;
+      case 'ranking':
+        if (window.RankingPage) RankingPage.render();
+        break;
+      default:
+        console.warn(`Unknown page: ${pageId}`);
+    }
+  }
+
+  refreshCurrentPage() {
+    Auth.updateHeaderUI();
+    this.renderPage(this.currentPage);
+  }
+
+  // Modal Handlers
+  openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add('active');
+    }
+  }
+
+  closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove('active');
+    }
+  }
+
+  // Toast Notification System
+  showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '⚠️';
+
+    toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      toast.style.transition = 'all 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+}
+
+// Instantiate App
+window.App = new AppController();
+
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});

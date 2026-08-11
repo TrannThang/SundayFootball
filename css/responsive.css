@@ -1,0 +1,421 @@
+/* ==========================================================================
+   SUNDAY FOOTBALL - RESPONSIVE & SPECIFIC COMPONENT STYLES
+   ========================================================================== */
+
+/* PIN Modal Grid Pad */
+.pin-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.pin-key {
+  height: 52px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.pin-key:hover, .pin-key:active {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: var(--accent-cyan);
+}
+
+.pin-key.clear-key {
+  color: var(--accent-rose);
+  font-size: 0.9rem;
+}
+
+.pin-key.submit-key {
+  background: var(--accent-cyan);
+  color: var(--text-dark);
+}
+
+.pin-display {
+  width: 100%;
+  height: 54px;
+  background: rgba(9, 13, 22, 0.8);
+  border: 2px solid var(--border-color-glow);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 12px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  margin-bottom: 12px;
+}
+
+/* Home Page Countdown Banner */
+.countdown-box {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(16, 185, 129, 0.08));
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+}
+
+.countdown-timer {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.time-unit {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  min-width: 60px;
+}
+
+.time-val {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  line-height: 1;
+}
+
+.time-lbl {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Attendance Quick Action Box */
+.attendance-action-card {
+  background: linear-gradient(180deg, var(--bg-card), rgba(30, 41, 59, 0.6));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+}
+
+.attendance-btns-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.attendance-btn-go {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  font-size: 1.05rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.attendance-btn-no {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #be123c, #f43f5e);
+  color: white;
+  font-size: 1.05rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Fixtures List */
+.fixture-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(9, 13, 22, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.fixture-team {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.fixture-team.right {
+  justify-content: flex-end;
+}
+
+.fixture-vs {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Player Cards (FIFA Style) */
+.squad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.fifa-card {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: pointer;
+}
+
+.fifa-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--accent-cyan);
+}
+
+.fifa-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.fifa-ovr {
+  font-size: 1.6rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ovr-gold);
+}
+
+.fifa-pos {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+}
+
+.fifa-avatar-wrap {
+  width: 56px;
+  height: 56px;
+  margin: 6px auto;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-color-glow);
+  background: var(--bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+}
+
+.fifa-name {
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 8px;
+}
+
+.fifa-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 8px;
+  font-size: 0.68rem;
+  background: rgba(9, 13, 22, 0.5);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stat-lbl { color: var(--text-muted); font-weight: 600; }
+.stat-val { color: var(--text-primary); font-weight: 800; }
+
+/* Filter Tabs */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+  scrollbar-width: none;
+}
+
+.filter-tabs::-webkit-scrollbar { display: none; }
+
+.filter-tab-btn {
+  padding: 6px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filter-tab-btn.active {
+  background: var(--accent-cyan);
+  color: var(--text-dark);
+  border-color: var(--accent-cyan);
+  font-weight: 800;
+}
+
+/* Tables Styling */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.custom-table th {
+  background: rgba(9, 13, 22, 0.7);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.custom-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.custom-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Fund 6-month chart */
+.chart-bar-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 140px;
+  padding-top: 20px;
+  margin-top: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chart-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 14%;
+}
+
+.chart-bars-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 100px;
+  width: 100%;
+  justify-content: center;
+}
+
+.chart-bar-inc {
+  width: 10px;
+  background: var(--accent-emerald);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.5s ease;
+}
+
+.chart-bar-exp {
+  width: 10px;
+  background: var(--accent-rose);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.5s ease;
+}
+
+.chart-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Drag & Drop Team Builder */
+.team-droppable {
+  min-height: 180px;
+  background: rgba(9, 13, 22, 0.4);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.draggable-player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  cursor: grab;
+  user-select: none;
+}
+
+.draggable-player:active {
+  cursor: grabbing;
+  opacity: 0.7;
+}
+
+/* Desktop Adjustments */
+@media (min-width: 768px) {
+  body {
+    padding-bottom: 30px;
+  }
+
+  .main-header {
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    margin-bottom: 10px;
+  }
+
+  .bottom-nav {
+    top: auto;
+    bottom: 20px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color-glow);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 600px;
+  }
+}

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sunday Football · Quản Lý Đội Bóng Nội Bộ</title>
+  
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Main Sticky Header -->
+    <header class="main-header">
+      <div class="brand-section">
+        <div class="brand-logo-wrapper">
+          <span class="brand-logo-icon">⚽</span>
+        </div>
+        <div class="brand-title-group">
+          <h1>Sunday Football</h1>
+          <div class="brand-subtitle">
+            <span>2026</span>
+            <span class="dot-separator"></span>
+            <span>21 thành viên</span>
+            <span class="dot-separator"></span>
+            <span id="header-attendance-count" style="color: var(--accent-emerald); font-weight:700;">14/21 Đi</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- User / PIN Login Badge -->
+      <button id="user-status-btn" class="user-status-btn" onclick="Auth.handleUserHeaderClick()">
+        <div class="user-avatar-mini" id="header-avatar">?</div>
+        <span id="header-username">Đăng nhập</span>
+      </button>
+    </header>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ===================================================================
+         PAGE 1: TRANG CHỦ (HOME)
+         =================================================================== -->
+    <div id="page-home" class="page-view active">
+      <!-- Loaded dynamically by js/pages/home.js -->
+    </div>
+
+    <!-- ===================================================================
+         PAGE 2: TRANG CHIA ĐỘI (TEAMS)
+         =================================================================== -->
+    <div id="page-team" class="page-view">
+      <!-- Loaded dynamically by js/pages/team.js -->
+    </div>
+
+    <!-- ===================================================================
+         PAGE 3: TRANG ĐỘI HÌNH (SQUAD)
+         =================================================================== -->
+    <div id="page-squad" class="page-view">
+      <!-- Loaded dynamically by js/pages/squad.js -->
+    </div>
+
+    <!-- ===================================================================
+         PAGE 4: TRANG QUỸ (FUND)
+         =================================================================== -->
+    <div id="page-fund" class="page-view">
+      <!-- Loaded dynamically by js/pages/fund.js -->
+    </div>
+
+    <!-- ===================================================================
+         PAGE 5: TRANG BXH (RANKING)
+         =================================================================== -->
+    <div id="page-ranking" class="page-view">
+      <!-- Loaded dynamically by js/pages/ranking.js -->
+    </div>
+
+    <!-- ===================================================================
+         BOTTOM NAVIGATION BAR
+         =================================================================== -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-page="home">
+        <span class="nav-icon">🏠</span>
+        <span>Trang chủ</span>
+      </button>
+      <button class="nav-item" data-page="team">
+        <span class="nav-icon">🎽</span>
+        <span>Chia đội</span>
+      </button>
+      <button class="nav-item" data-page="squad">
+        <span class="nav-icon">🏃</span>
+        <span>Đội hình</span>
+      </button>
+      <button class="nav-item" data-page="fund">
+        <span class="nav-icon">💰</span>
+        <span>Quỹ đội</span>
+      </button>
+      <button class="nav-item" data-page="ranking">
+        <span class="nav-icon">🏆</span>
+        <span>BXH</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 1: AUTH & PIN LOGIN MODAL
+       =================================================================== -->
+  <div id="pin-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🔐 Điểm Danh / Đăng Nhập</h3>
+        <button class="modal-close-btn" onclick="Auth.closePinModal()">&times;</button>
+      </div>
+
+      <div class="pin-modal-content">
+        <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:12px; text-align:center;">
+          Nhập mã PIN cá nhân của bạn (VD: <strong>TT123</strong>, <strong>A001</strong>, <strong>1001</strong>) hoặc mã Admin (<strong>9999</strong>):
+        </p>
+
+        <div style="margin-bottom:12px;">
+          <input type="text" id="pin-text-input" class="form-input" placeholder="Gõ mã PIN tại đây..." style="text-align:center; font-size:1.2rem; font-weight:800; letter-spacing:2px; text-transform:uppercase;" onkeyup="if(event.key === 'Enter') Auth.submitPinText()">
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <button class="btn btn-primary btn-block" onclick="Auth.submitPinText()">Xác Nhận Đăng Nhập</button>
+        </div>
+
+        <!-- Quick Select Member Option -->
+        <div class="form-group" style="margin-top:10px; border-top:1px solid var(--border-color); padding-top:10px;">
+          <label class="form-label" style="font-size:0.75rem;">Hoặc chọn nhanh tên của bạn:</label>
+          <select id="quick-member-pin-select" class="form-select" onchange="Auth.selectMemberPin(this.value)">
+            <option value="">-- Chọn tên cầu thủ --</option>
+          </select>
+        </div>
+
+        <div class="pin-keypad" style="margin-top:10px;">
+          <button class="pin-key" onclick="Auth.enterDigit('1')">1</button>
+          <button class="pin-key" onclick="Auth.enterDigit('2')">2</button>
+          <button class="pin-key" onclick="Auth.enterDigit('3')">3</button>
+          <button class="pin-key" onclick="Auth.enterDigit('4')">4</button>
+          <button class="pin-key" onclick="Auth.enterDigit('5')">5</button>
+          <button class="pin-key" onclick="Auth.enterDigit('6')">6</button>
+          <button class="pin-key" onclick="Auth.enterDigit('7')">7</button>
+          <button class="pin-key" onclick="Auth.enterDigit('8')">8</button>
+          <button class="pin-key" onclick="Auth.enterDigit('9')">9</button>
+          <button class="pin-key clear-key" onclick="Auth.clearPin()">Xóa</button>
+          <button class="pin-key" onclick="Auth.enterDigit('0')">0</button>
+          <button class="pin-key submit-key" onclick="Auth.submitPin()">OK</button>
+        </div>
+
+        <div style="margin-top:14px; font-size:0.78rem; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; color:var(--text-muted);">
+          📌 <strong>Mã PIN gợi ý:</strong><br>
+          • <strong>TT123</strong> / <strong>A001</strong>: Trần Thắng<br>
+          • <strong>PBT456</strong> / <strong>A002</strong>: Phan Bảo Tuân<br>
+          • <strong>9999</strong>: Quyền Admin Quản Trị
+          <div style="margin-top:8px; text-align:center;">
+            <button class="btn btn-secondary btn-sm" onclick="Auth.resetAppStoreData()" style="font-size:0.72rem; padding:3px 8px;">🔄 Cập nhật lại 21 cầu thủ chính thức</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 2: ADMIN MATCH RESULT MODAL
+       =================================================================== -->
+  <div id="match-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">⚽ Nhập Kết Quả Trận Đấu</h3>
+        <button class="modal-close-btn" onclick="App.closeModal('match-modal')">&times;</button>
+      </div>
+      <form id="match-score-form" onsubmit="TeamPage.saveMatchResult(event)">
+        <input type="hidden" id="match-index-input">
+        <div class="form-group">
+          <label class="form-label" id="match-teams-label">Đội 1 vs Đội 2</label>
+          <div style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+            <div style="flex:1;">
+              <span id="match-home-name" style="font-weight:700;">Đội 1</span>
+              <input type="number" id="match-home-score" class="form-input" min="0" value="0" required style="margin-top:4px; font-size:1.2rem; text-align:center;">
+            </div>
+            <span style="font-weight:800; font-size:1.2rem;">-</span>
+            <div style="flex:1;">
+              <span id="match-away-name" style="font-weight:700;">Đội 2</span>
+              <input type="number" id="match-away-score" class="form-input" min="0" value="0" required style="margin-top:4px; font-size:1.2rem; text-align:center;">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cầu thủ ghi bàn / kiến tạo (tùy chọn):</label>
+          <div id="match-scorers-container" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- Dynamic scorer rows -->
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="TeamPage.addScorerRow()" style="margin-top:8px;">+ Thêm bàn thắng</button>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="App.closeModal('match-modal')">Hủy</button>
+          <button type="submit" class="btn btn-primary" style="flex:1;">Lưu kết quả</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 3: ADMIN PLAYER MODAL (Add / Edit Player)
+       =================================================================== -->
+  <div id="player-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="player-modal-title">🏃 Thêm Cầu Thủ Mới</h3>
+        <button class="modal-close-btn" onclick="App.closeModal('player-modal')">&times;</button>
+      </div>
+      <form id="player-form" onsubmit="SquadPage.savePlayer(event)">
+        <input type="hidden" id="player-edit-id">
+        <div class="form-group">
+          <label class="form-label">Tên hiển thị:</label>
+          <input type="text" id="player-name" class="form-input" required placeholder="VD: Nguyễn Văn A">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mã PIN cá nhân (4 chữ số):</label>
+          <input type="text" id="player-pin" class="form-input" required placeholder="VD: 1022" maxlength="6">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Vị trí:</label>
+            <select id="player-pos" class="form-select" required>
+              <option value="ST">ST (Tiền đạo)</option>
+              <option value="LW">LW (Cánh trái)</option>
+              <option value="RW">RW (Cánh phải)</option>
+              <option value="CAM">CAM (Hộ công)</option>
+              <option value="CM">CM (Tiền vệ)</option>
+              <option value="CDM">CDM (Tiền vệ phòng ngự)</option>
+              <option value="LB">LB (Hậu vệ trái)</option>
+              <option value="RB">RB (Hậu vệ phải)</option>
+              <option value="CB">CB (Trung vệ)</option>
+              <option value="GK">GK (Thủ môn)</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Chỉ số OVR:</label>
+            <input type="number" id="player-ovr" class="form-input" min="40" max="99" value="70" required>
+          </div>
+        </div>
+
+        <label class="form-label">6 Chỉ số FIFA (PAC/SHO/PAS/DRI/DEF/PHY):</label>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:14px;">
+          <input type="number" id="stat-pac" class="form-input" placeholder="PAC" min="10" max="99" value="70">
+          <input type="number" id="stat-sho" class="form-input" placeholder="SHO" min="10" max="99" value="70">
+          <input type="number" id="stat-pas" class="form-input" placeholder="PAS" min="10" max="99" value="70">
+          <input type="number" id="stat-dri" class="form-input" placeholder="DRI" min="10" max="99" value="70">
+          <input type="number" id="stat-def" class="form-input" placeholder="DEF" min="10" max="99" value="70">
+          <input type="number" id="stat-phy" class="form-input" placeholder="PHY" min="10" max="99" value="70">
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="App.closeModal('player-modal')">Hủy</button>
+          <button type="submit" class="btn btn-primary" style="flex:1;">Lưu Cầu Thủ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 4: ADMIN FUND TRANSACTION MODAL
+       =================================================================== -->
+  <div id="fund-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">💸 Thêm Giao Dịch Quỹ</h3>
+        <button class="modal-close-btn" onclick="App.closeModal('fund-modal')">&times;</button>
+      </div>
+      <form id="fund-form" onsubmit="FundPage.saveTransaction(event)">
+        <div class="form-group">
+          <label class="form-label">Loại giao dịch:</label>
+          <select id="fund-type" class="form-select" required>
+            <option value="income">➕ Thu Quỹ (+)</option>
+            <option value="expense">➖ Chi Phí (-)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả chi tiết:</label>
+          <input type="text" id="fund-desc" class="form-input" required placeholder="VD: Tiền sân Sân Chảo Lửa">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số tiền (VNĐ):</label>
+          <input type="number" id="fund-amount" class="form-input" required min="1000" step="5000" placeholder="VD: 600000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ngày thực hiện:</label>
+          <input type="date" id="fund-date" class="form-input" required>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="App.closeModal('fund-modal')">Hủy</button>
+          <button type="submit" class="btn btn-primary" style="flex:1;">Lưu Giao Dịch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 5: FUND CHECKLIST MODAL (Chi tiết đóng quỹ)
+       =================================================================== -->
+  <div id="fund-checklist-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">📋 Chi Tiết Đóng Quỹ Tháng</h3>
+        <button class="modal-close-btn" onclick="App.closeModal('fund-checklist-modal')">&times;</button>
+      </div>
+      <div id="fund-checklist-content">
+        <!-- Dynamic checklist of 21 players -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/storage.js?v=1.1"></script>
+  <script src="js/auth.js?v=1.1"></script>
+  <script src="js/app.js?v=1.1"></script>
+  <script src="js/pages/home.js?v=1.1"></script>
+  <script src="js/pages/team.js?v=1.1"></script>
+  <script src="js/pages/squad.js?v=1.1"></script>
+  <script src="js/pages/fund.js?v=1.1"></script>
+  <script src="js/pages/ranking.js?v=1.1"></script>
+</body>
+</html>
