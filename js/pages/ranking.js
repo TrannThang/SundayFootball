@@ -14,9 +14,6 @@ class RankingPageController {
     // Top Scorers sorted by goals descending
     const topScorers = [...players].filter(p => p.goals > 0).sort((a, b) => b.goals - a.goals).slice(0, 5);
 
-    // Top Assists sorted by assists descending
-    const topAssists = [...players].filter(p => p.assists > 0).sort((a, b) => b.assists - a.assists).slice(0, 5);
-
     container.innerHTML = `
       <!-- Standings Table Card -->
       <div class="card">
@@ -63,54 +60,27 @@ class RankingPageController {
         </div>
       </div>
 
-      <!-- Golden Boot & Assists Section -->
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
-        <!-- Top Scorers -->
-        <div class="card" style="margin:0;">
-          <div class="card-header-flex">
-            <div class="card-title">
-              <span class="card-title-icon">⚽</span>
-              <span>Vua Phá Lưới</span>
-            </div>
-            <span style="font-size:0.72rem; color:var(--accent-gold); font-weight:800;">TOP GOALS</span>
+      <!-- Golden Boot Section -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div class="card-title">
+            <span class="card-title-icon">⚽</span>
+            <span>Vua Phá Lưới</span>
           </div>
-
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            ${topScorers.length > 0 ? topScorers.map((p, idx) => `
-              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <span style="font-weight:900; font-size:0.85rem; color:var(--accent-gold); width:18px;">#${idx + 1}</span>
-                  <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
-                  <span class="team-badge team-badge-${p.teamId}" style="font-size:0.65rem;">Đội ${p.teamId}</span>
-                </div>
-                <span style="font-weight:900; font-size:0.95rem; color:var(--accent-cyan);">${p.goals} bàn</span>
-              </div>
-            `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:10px;">Chưa có dữ liệu bàn thắng</div>'}
-          </div>
+          <span style="font-size:0.72rem; color:var(--accent-gold); font-weight:800;">TOP GOALS</span>
         </div>
 
-        <!-- Top Assists -->
-        <div class="card" style="margin:0;">
-          <div class="card-header-flex">
-            <div class="card-title">
-              <span class="card-title-icon">🎯</span>
-              <span>Bảng Kiến Tạo</span>
-            </div>
-            <span style="font-size:0.72rem; color:var(--accent-cyan); font-weight:800;">TOP ASSISTS</span>
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            ${topAssists.length > 0 ? topAssists.map((p, idx) => `
-              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <span style="font-weight:900; font-size:0.85rem; color:var(--accent-cyan); width:18px;">#${idx + 1}</span>
-                  <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
-                  <span class="team-badge team-badge-${p.teamId}" style="font-size:0.65rem;">Đội ${p.teamId}</span>
-                </div>
-                <span style="font-weight:900; font-size:0.95rem; color:var(--accent-emerald);">${p.assists} kiến tạo</span>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          ${topScorers.length > 0 ? topScorers.map((p, idx) => `
+            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:900; font-size:0.85rem; color:var(--accent-gold); width:18px;">#${idx + 1}</span>
+                <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
+                <span class="team-badge team-badge-${p.teamId}" style="font-size:0.65rem;">Đội ${p.teamId}</span>
               </div>
-            `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:10px;">Chưa có dữ liệu kiến tạo</div>'}
-          </div>
+              <span style="font-weight:900; font-size:0.95rem; color:var(--accent-cyan);">${p.goals} bàn</span>
+            </div>
+          `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:10px;">Chưa có dữ liệu bàn thắng</div>'}
         </div>
       </div>
 

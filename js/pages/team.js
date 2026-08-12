@@ -146,45 +146,131 @@ class TeamPageController {
   }
 
   renderHistoryView(matches, isAdmin) {
-    const teamNames = { 1: 'Đội 1 (Đỏ 🟥)', 2: 'Đội 2 (Xanh 🟦)', 3: 'Đội 3 (Vàng 🟨)' };
+    const matchDay = Store.getMatchDay();
+
+    // Group matches by their session date, newest date first.
+    const groups = {};
+    matches.forEach(m => {
+      const key = m.matchDate || matchDay.date;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(m);
+    });
+    const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
     return `
       <div style="display:flex; flex-direction:column; gap:14px;">
-        <div class="card-header-flex">
-          <h3 class="card-title">⚽ Kết Quả Các Trận Luân Phiên</h3>
-          ${isAdmin ? `<p style="font-size:0.75rem; color:var(--accent-gold);">Click "Nhập tỷ số" để cập nhật kết quả</p>` : ''}
+        <!-- Current Matchday Card -->
+        <div class="card" style="margin-bottom:0; background:linear-gradient(135deg, rgba(6,182,212,0.1), rgba(19,27,46,0.9)); border:1px solid rgba(6,182,212,0.3);">
+          <div class="card-header-flex" style="margin-bottom:${isAdmin ? '10px' : '0'};">
+            <div>
+              <span class="section-badge">BUỔI ĐÁ HIỆN TẠI</span>
+              <h3 style="font-size:1.05rem; font-weight:800; margin-top:4px;">${TeamPage.formatDate(matchDay.date)}</h3>
+            </div>
+            ${isAdmin ? `<button class="btn btn-outline btn-sm" onclick="TeamPage.startNewMatchDay()">🔄 Chủ Nhật mới</button>` : ''}
+          </div>
+
+          ${isAdmin ? `
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="new-match-home" class="form-select" style="flex:1;">
+                <option value="1">Đội 1 (Đỏ)</option>
+                <option value="2">Đội 2 (Xanh)</option>
+                <option value="3">Đội 3 (Vàng)</option>
+              </select>
+              <span style="font-weight:800;">vs</span>
+              <select id="new-match-away" class="form-select" style="flex:1;">
+                <option value="1">Đội 1 (Đỏ)</option>
+                <option value="2" selected>Đội 2 (Xanh)</option>
+                <option value="3">Đội 3 (Vàng)</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="TeamPage.addMatch()">➕ Thêm trận</button>
+            </div>
+          ` : ''}
         </div>
 
-        ${matches.map((m, idx) => `
-          <div class="card" style="margin-bottom:0;">
-            <div class="card-header-flex" style="margin-bottom:8px;">
-              <span style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">TRẬN ${idx + 1}</span>
-              ${isAdmin ? `<button class="btn btn-outline btn-sm" onclick="TeamPage.openMatchModal(${idx})">✏️ Nhập tỷ số</button>` : ''}
+        ${sortedDates.map(dateKey => `
+          <div>
+            <div style="font-size:0.78rem; font-weight:800; color:var(--text-muted); margin-bottom:8px; padding-left:2px;">
+              📅 ${TeamPage.formatDate(dateKey)} ${dateKey === matchDay.date ? '(hiện tại)' : ''}
             </div>
-
-            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.7); padding:14px; border-radius:10px;">
-              <div style="flex:1; text-align:center; font-weight:800; font-size:0.95rem;">
-                ${teamNames[m.homeTeam]}
-              </div>
-
-              <div style="font-size:1.6rem; font-weight:900; color:var(--accent-cyan); padding:0 16px;">
-                ${m.status === 'finished' ? `${m.homeScore} - ${m.awayScore}` : 'VS'}
-              </div>
-
-              <div style="flex:1; text-align:center; font-weight:800; font-size:0.95rem;">
-                ${teamNames[m.awayTeam]}
-              </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              ${groups[dateKey].map(m => this.renderMatchCard(m, isAdmin)).join('')}
             </div>
-
-            ${m.scorers && m.scorers.length > 0 ? `
-              <div style="margin-top:10px; font-size:0.8rem; color:var(--text-secondary); background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px;">
-                ⚽ <strong>Ghi bàn:</strong> ${m.scorers.map(s => `${s.name} (${s.goals} bàn)`).join(', ')}
-              </div>
-            ` : ''}
           </div>
         `).join('')}
       </div>
     `;
+  }
+
+  renderMatchCard(m, isAdmin) {
+    const teamNames = { 1: 'Đội 1 (Đỏ 🟥)', 2: 'Đội 2 (Xanh 🟦)', 3: 'Đội 3 (Vàng 🟨)' };
+
+    return `
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-header-flex" style="margin-bottom:8px;">
+          <span style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">${m.status === 'finished' ? 'ĐÃ ĐÁ' : 'CHƯA CÓ TỶ SỐ'}</span>
+          ${isAdmin ? `
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="TeamPage.openMatchModal(${m.id})">✏️ Nhập tỷ số</button>
+              <button class="btn btn-danger btn-sm" onclick="TeamPage.deleteMatch(${m.id})">🗑️</button>
+            </div>
+          ` : ''}
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.7); padding:14px; border-radius:10px;">
+          <div style="flex:1; text-align:center; font-weight:800; font-size:0.95rem;">
+            ${teamNames[m.homeTeam]}
+          </div>
+
+          <div style="font-size:1.6rem; font-weight:900; color:var(--accent-cyan); padding:0 16px;">
+            ${m.status === 'finished' ? `${m.homeScore} - ${m.awayScore}` : 'VS'}
+          </div>
+
+          <div style="flex:1; text-align:center; font-weight:800; font-size:0.95rem;">
+            ${teamNames[m.awayTeam]}
+          </div>
+        </div>
+
+        ${m.scorers && m.scorers.length > 0 ? `
+          <div style="margin-top:10px; font-size:0.8rem; color:var(--text-secondary); background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px;">
+            ⚽ <strong>Ghi bàn:</strong> ${m.scorers.map(s => `${s.name} (${s.goals} bàn)`).join(', ')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  formatDate(isoDate) {
+    if (!isoDate) return '';
+    const [y, m, d] = isoDate.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  startNewMatchDay() {
+    const today = new Date().toISOString().split('T')[0];
+    const input = prompt('Nhập ngày Chủ Nhật mới (YYYY-MM-DD):', today);
+    if (!input) return;
+    Store.startNewMatchDay(input.trim());
+    App.showToast('Đã bắt đầu buổi đá mới!', 'success');
+    this.render();
+  }
+
+  addMatch() {
+    const home = document.getElementById('new-match-home').value;
+    const away = document.getElementById('new-match-away').value;
+    if (home === away) {
+      App.showToast('Hai đội thi đấu phải khác nhau!', 'error');
+      return;
+    }
+    Store.addMatch(home, away);
+    App.showToast('Đã thêm trận đấu mới, bấm "Nhập tỷ số" khi có kết quả!', 'success');
+    this.render();
+  }
+
+  deleteMatch(matchId) {
+    if (!confirm('Xoá trận đấu này?')) return;
+    Store.deleteMatch(matchId);
+    App.showToast('Đã xoá trận đấu.', 'info');
+    this.render();
   }
 
   autoBalance() {
@@ -199,19 +285,20 @@ class TeamPageController {
     this.render();
   }
 
-  openMatchModal(matchIndex) {
-    const matches = Store.getMatches();
-    const match = matches[matchIndex];
+  openMatchModal(matchId) {
+    const match = Store.getMatches().find(m => m.id === matchId);
     if (!match) return;
 
     const teamNames = { 1: 'Đội 1 (Đỏ)', 2: 'Đội 2 (Xanh)', 3: 'Đội 3 (Vàng)' };
 
-    document.getElementById('match-index-input').value = matchIndex;
+    document.getElementById('match-index-input').value = match.id;
     document.getElementById('match-teams-label').textContent = `${teamNames[match.homeTeam]} vs ${teamNames[match.awayTeam]}`;
     document.getElementById('match-home-name').textContent = teamNames[match.homeTeam];
     document.getElementById('match-away-name').textContent = teamNames[match.awayTeam];
     document.getElementById('match-home-score').value = match.homeScore || 0;
     document.getElementById('match-away-score').value = match.awayScore || 0;
+    document.getElementById('match-duration').value = match.duration || '10 phút';
+    document.getElementById('match-note').value = match.note || '';
 
     // Render scorers
     const scorersContainer = document.getElementById('match-scorers-container');
@@ -245,9 +332,11 @@ class TeamPageController {
 
   saveMatchResult(e) {
     e.preventDefault();
-    const matchIndex = document.getElementById('match-index-input').value;
+    const matchId = Number(document.getElementById('match-index-input').value);
     const homeScore = document.getElementById('match-home-score').value;
     const awayScore = document.getElementById('match-away-score').value;
+    const duration = document.getElementById('match-duration').value;
+    const note = document.getElementById('match-note').value;
 
     const scorerRows = document.querySelectorAll('#match-scorers-container > div');
     const scorers = [];
@@ -263,7 +352,7 @@ class TeamPageController {
       }
     });
 
-    Store.updateMatchResult(matchIndex, homeScore, awayScore, scorers);
+    Store.updateMatchResult(matchId, homeScore, awayScore, duration, note, scorers);
     App.showToast('Cập nhật tỷ số trận đấu & BXH thành công! ⚽', 'success');
     App.closeModal('match-modal');
     this.render();

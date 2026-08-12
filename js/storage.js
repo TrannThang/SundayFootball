@@ -40,10 +40,12 @@ const DEFAULT_TACTICS = {
   }
 };
 
+const DEFAULT_MATCHDAY = { date: "2026-08-09" };
+
 const DEFAULT_MATCHES = [
-  { id: 1, homeTeam: 1, awayTeam: 2, homeScore: 2, awayScore: 1, status: 'finished', duration: '10 phút', note: 'Đội 1 thắng 2-1 (Chạm 2 ở lại)', scorers: [{ name: 'Trần Thắng', goals: 2 }, { name: 'Hòa Nova', goals: 1 }] },
-  { id: 2, homeTeam: 2, awayTeam: 3, homeScore: 1, awayScore: 1, status: 'finished', duration: '10 phút', note: 'Hòa 1-1 (Đội 2 ở lâu hơn ra sân)', scorers: [{ name: 'Ngô Quang Tùng', goals: 1 }, { name: 'Xuân Hậu', goals: 1 }] },
-  { id: 3, homeTeam: 3, awayTeam: 1, homeScore: 0, awayScore: 2, status: 'finished', duration: '8 phút', note: 'Đội 1 thắng 2-0 (Chạm 2 ở lại)', scorers: [{ name: 'Cao Thái Hoài', goals: 1 }, { name: 'Phan Bảo Tuân', goals: 1 }] }
+  { id: 1, homeTeam: 1, awayTeam: 2, homeScore: 2, awayScore: 1, status: 'finished', duration: '10 phút', note: 'Đội 1 thắng 2-1 (Chạm 2 ở lại)', scorers: [{ name: 'Trần Thắng', goals: 2 }, { name: 'Hòa Nova', goals: 1 }], matchDate: '2026-08-09' },
+  { id: 2, homeTeam: 2, awayTeam: 3, homeScore: 1, awayScore: 1, status: 'finished', duration: '10 phút', note: 'Hòa 1-1 (Đội 2 ở lâu hơn ra sân)', scorers: [{ name: 'Ngô Quang Tùng', goals: 1 }, { name: 'Xuân Hậu', goals: 1 }], matchDate: '2026-08-09' },
+  { id: 3, homeTeam: 3, awayTeam: 1, homeScore: 0, awayScore: 2, status: 'finished', duration: '8 phút', note: 'Đội 1 thắng 2-0 (Chạm 2 ở lại)', scorers: [{ name: 'Cao Thái Hoài', goals: 1 }, { name: 'Phan Bảo Tuân', goals: 1 }], matchDate: '2026-08-09' }
 ];
 
 const DEFAULT_FUND = {
@@ -53,7 +55,8 @@ const DEFAULT_FUND = {
   matchSession: {
     date: "2026-08-09",
     fee: 500000,
-    paidIds: [1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15]
+    paidIds: [1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15],
+    customFees: {}
   },
   transactions: [
     { id: 1, type: 'income', desc: 'Quỹ tháng 8 - 13 người × 150k', amount: 1950000, date: '2026-08-05' },
@@ -87,21 +90,35 @@ class DataStore {
     }
     try {
       const parsed = JSON.parse(raw);
-      parsed.nextMatch = parsed.nextMatch || DEFAULT_NEXT_MATCH;
-      parsed.notice = parsed.notice || DEFAULT_NOTICE;
-      parsed.tactics = parsed.tactics || DEFAULT_TACTICS;
-      if (parsed.fund && !parsed.fund.matchSession) {
-        parsed.fund.matchSession = {
-          date: new Date().toISOString().split('T')[0],
-          fee: 500000,
-          paidIds: []
-        };
-      }
-      return parsed;
+      return this.normalize(parsed);
     } catch (e) {
       console.error('Error parsing stored data', e);
       return this.resetToDefault();
     }
+  }
+
+  // Back-fills any fields missing from older/incomplete data (local OR from the
+  // cloud) so every render can safely assume the full shape exists.
+  normalize(parsed) {
+    parsed.nextMatch = parsed.nextMatch || DEFAULT_NEXT_MATCH;
+    parsed.notice = parsed.notice || DEFAULT_NOTICE;
+    parsed.tactics = parsed.tactics || DEFAULT_TACTICS;
+    parsed.matches = parsed.matches || DEFAULT_MATCHES;
+    parsed.matchDay = parsed.matchDay || DEFAULT_MATCHDAY;
+    parsed.matches.forEach(m => {
+      if (!m.matchDate) m.matchDate = parsed.matchDay.date;
+    });
+    parsed.fund = parsed.fund || DEFAULT_FUND;
+    if (!parsed.fund.matchSession) {
+      parsed.fund.matchSession = {
+        date: new Date().toISOString().split('T')[0],
+        fee: 500000,
+        paidIds: [],
+        customFees: {}
+      };
+    }
+    parsed.fund.matchSession.customFees = parsed.fund.matchSession.customFees || {};
+    return parsed;
   }
 
   resetToDefault() {
@@ -109,6 +126,7 @@ class DataStore {
       players: DEFAULT_PLAYERS,
       tactics: DEFAULT_TACTICS,
       matches: DEFAULT_MATCHES,
+      matchDay: DEFAULT_MATCHDAY,
       fund: DEFAULT_FUND,
       notice: DEFAULT_NOTICE,
       nextMatch: DEFAULT_NEXT_MATCH
@@ -172,14 +190,50 @@ class DataStore {
     return this.data.matches;
   }
 
-  updateMatchResult(matchIndex, homeScore, awayScore, duration = '10 phút', note = '', scorers = []) {
-    if (this.data.matches[matchIndex]) {
-      this.data.matches[matchIndex].homeScore = Number(homeScore);
-      this.data.matches[matchIndex].awayScore = Number(awayScore);
-      this.data.matches[matchIndex].duration = duration;
-      this.data.matches[matchIndex].note = note;
-      this.data.matches[matchIndex].status = 'finished';
-      this.data.matches[matchIndex].scorers = scorers;
+  getMatchDay() {
+    return this.data.matchDay || DEFAULT_MATCHDAY;
+  }
+
+  startNewMatchDay(dateStr) {
+    this.data.matchDay = { date: dateStr };
+    this.save();
+  }
+
+  addMatch(homeTeam, awayTeam) {
+    const match = {
+      id: Date.now(),
+      homeTeam: Number(homeTeam),
+      awayTeam: Number(awayTeam),
+      homeScore: 0,
+      awayScore: 0,
+      status: 'pending',
+      duration: '10 phút',
+      note: '',
+      scorers: [],
+      matchDate: this.getMatchDay().date
+    };
+    this.data.matches.push(match);
+    this.save();
+    return match;
+  }
+
+  deleteMatch(matchId) {
+    const idx = this.data.matches.findIndex(m => m.id === Number(matchId));
+    if (idx !== -1) {
+      this.data.matches.splice(idx, 1);
+      this.save();
+    }
+  }
+
+  updateMatchResult(matchId, homeScore, awayScore, duration = '10 phút', note = '', scorers = []) {
+    const match = this.data.matches.find(m => m.id === Number(matchId));
+    if (match) {
+      match.homeScore = Number(homeScore);
+      match.awayScore = Number(awayScore);
+      match.duration = duration;
+      match.note = note;
+      match.status = 'finished';
+      match.scorers = scorers;
 
       scorers.forEach(s => {
         const p = this.data.players.find(player => player.name.toLowerCase() === s.name.toLowerCase());
@@ -252,8 +306,31 @@ class DataStore {
     this.data.fund.matchSession = {
       fee: Number(fee),
       date: date,
-      paidIds: []
+      paidIds: [],
+      customFees: {}
     };
+    this.save();
+  }
+
+  getPlayerMatchFee(playerId) {
+    const session = this.data.fund.matchSession;
+    const custom = session.customFees ? session.customFees[playerId] : undefined;
+    return custom !== undefined ? custom : session.fee;
+  }
+
+  setPlayerMatchFee(playerId, amount) {
+    if (!this.data.fund.matchSession.customFees) this.data.fund.matchSession.customFees = {};
+    this.data.fund.matchSession.customFees[playerId] = Number(amount);
+    this.save();
+  }
+
+  markAllMatchPaid() {
+    this.data.fund.matchSession.paidIds = this.data.players.map(p => p.id);
+    this.save();
+  }
+
+  markAllMatchUnpaid() {
+    this.data.fund.matchSession.paidIds = [];
     this.save();
   }
 

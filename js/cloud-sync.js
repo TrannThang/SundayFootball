@@ -43,9 +43,14 @@ class CloudSyncEngine {
     const cloudData = snapshot.val();
     if (!cloudData) return;
 
+    // Cloud data can come from an older app version or a partial write, so it
+    // must go through the same normalize() pass local data gets on load() -
+    // otherwise newer pages (e.g. Fund) crash on missing fields and render blank.
+    const normalized = Store.normalize(cloudData);
+
     this.applyingRemoteUpdate = true;
-    Store.data = cloudData;
-    localStorage.setItem('SUNDAY_FOOTBALL_DATA_V3', JSON.stringify(cloudData));
+    Store.data = normalized;
+    localStorage.setItem('SUNDAY_FOOTBALL_DATA_V3', JSON.stringify(normalized));
     if (window.App) App.refreshCurrentPage();
     this.applyingRemoteUpdate = false;
   }

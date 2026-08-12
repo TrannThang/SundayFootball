@@ -46,8 +46,12 @@ class FundPageController {
         </div>
 
         <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.85rem; background:rgba(9,13,22,0.5); padding:10px 14px; border-radius:8px;">
-          <div>Phí trận: <strong style="color:var(--accent-gold);">${formatVnd(fundData.matchSession.fee)}/người</strong></div>
+          <div>Phí mặc định: <strong style="color:var(--accent-gold);">${formatVnd(fundData.matchSession.fee)}/người</strong></div>
           <div>Đã đóng: <strong style="color:var(--accent-emerald);">${fundData.matchSession.paidIds.length}/${Store.getPlayers().length}</strong></div>
+        </div>
+
+        <div style="margin-top:6px; font-size:0.82rem; color:var(--text-secondary);">
+          Đã thu: <strong style="color:var(--accent-emerald);">${formatVnd(this.getSessionCollected())}</strong> / dự kiến <strong>${formatVnd(this.getSessionExpected())}</strong>
         </div>
 
         ${isAdmin ? `
@@ -102,6 +106,15 @@ class FundPageController {
     return `${d}/${m}/${y}`;
   }
 
+  getSessionCollected() {
+    const fund = Store.getFund();
+    return fund.matchSession.paidIds.reduce((sum, id) => sum + Store.getPlayerMatchFee(id), 0);
+  }
+
+  getSessionExpected() {
+    return Store.getPlayers().reduce((sum, p) => sum + Store.getPlayerMatchFee(p.id), 0);
+  }
+
   renderTransactions(transactions, formatVnd) {
     let filtered = transactions;
     if (this.filterType !== 'ALL') {
@@ -136,25 +149,35 @@ class FundPageController {
 
     const container = document.getElementById('fund-checklist-content');
     container.innerHTML = `
-      <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">
-        Trận ngày <strong>${this.formatDate(fund.matchSession.date)}</strong> (${new Intl.NumberFormat('vi-VN').format(fund.matchSession.fee)}đ/người)
+      <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">
+        Trận ngày <strong>${this.formatDate(fund.matchSession.date)}</strong> — phí mặc định ${new Intl.NumberFormat('vi-VN').format(fund.matchSession.fee)}đ/người, có thể sửa riêng từng người bên dưới.
       </p>
+
+      ${isAdmin ? `
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="FundPage.markAllPaid()">✅ Chọn tất cả đã đóng</button>
+          <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="FundPage.markAllUnpaid()">❌ Bỏ chọn tất cả</button>
+        </div>
+      ` : ''}
+
       <div style="display:flex; flex-direction:column; gap:6px; max-height:350px; overflow-y:auto;">
         ${players.map(p => {
           const isPaid = paidIds.includes(p.id);
+          const fee = Store.getPlayerMatchFee(p.id);
           return `
-            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px;">
-              <span style="font-weight:700; font-size:0.88rem;">${p.name} (${p.pos})</span>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:0.8rem; font-weight:800; color:${isPaid ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">
-                  ${isPaid ? '✅ ĐÃ ĐÓNG' : '❌ CHƯA ĐÓNG'}
-                </span>
-                ${isAdmin ? `
-                  <button class="btn btn-secondary btn-sm" onclick="FundPage.togglePaid(${p.id})">
-                    ${isPaid ? 'Báo chưa' : 'Báo đã đóng'}
-                  </button>
-                ` : ''}
-              </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px;">
+              <span style="font-weight:700; font-size:0.85rem; flex:1;">${p.name} (${p.pos})</span>
+              ${isAdmin ? `
+                <input type="number" class="form-input" value="${fee}" step="10000" style="width:90px; padding:4px 8px; font-size:0.78rem;" onchange="FundPage.setPlayerFee(${p.id}, this.value)">
+              ` : `<span style="font-size:0.78rem; color:var(--text-muted);">${new Intl.NumberFormat('vi-VN').format(fee)}đ</span>`}
+              <span style="font-size:0.78rem; font-weight:800; color:${isPaid ? 'var(--accent-emerald)' : 'var(--accent-rose)'}; white-space:nowrap;">
+                ${isPaid ? '✅ ĐÃ ĐÓNG' : '❌ CHƯA'}
+              </span>
+              ${isAdmin ? `
+                <button class="btn btn-secondary btn-sm" onclick="FundPage.togglePaid(${p.id})">
+                  ${isPaid ? 'Báo chưa' : 'Báo đã đóng'}
+                </button>
+              ` : ''}
             </div>
           `;
         }).join('')}
@@ -169,6 +192,27 @@ class FundPageController {
     this.openChecklistModal();
     this.render();
     App.showToast('Đã cập nhật trạng thái đóng tiền!', 'info');
+  }
+
+  setPlayerFee(playerId, amount) {
+    Store.setPlayerMatchFee(playerId, amount);
+    this.openChecklistModal();
+    this.render();
+  }
+
+  markAllPaid() {
+    Store.markAllMatchPaid();
+    this.openChecklistModal();
+    this.render();
+    App.showToast('Đã đánh dấu tất cả đã đóng tiền!', 'success');
+  }
+
+  markAllUnpaid() {
+    if (!confirm('Bỏ chọn tất cả sẽ đánh dấu mọi người là chưa đóng tiền. Tiếp tục?')) return;
+    Store.markAllMatchUnpaid();
+    this.openChecklistModal();
+    this.render();
+    App.showToast('Đã bỏ chọn tất cả!', 'info');
   }
 
   saveSessionInfo() {
