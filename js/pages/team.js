@@ -121,7 +121,7 @@ class TeamPageController {
         <div style="display:flex; flex-direction:column; gap:6px;">
           ${teamList.map(p => `
             <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
-              <div style="display:flex; align-items:center; gap:10px;">
+              <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
                 <span class="pos-badge pos-${p.pos}">${p.pos}</span>
                 <span style="font-weight:700; font-size:0.9rem; ${!p.attendance ? 'text-decoration:line-through; opacity:0.5;' : ''}">${p.name}</span>
                 ${!p.attendance ? '<span style="font-size:0.7rem; color:var(--accent-rose); font-weight:800;">(VẮNG)</span>' : ''}

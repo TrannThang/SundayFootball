@@ -20,7 +20,7 @@ class FundPageController {
       <!-- Financial Summary Cards -->
       <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:14px;">
         <div class="card" style="margin:0; padding:12px; text-align:center;">
-          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">SỐ DƯ DƯ DỰ</div>
+          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">SỐ DƯ QUỸ</div>
           <div style="font-size:1rem; font-weight:900; color:var(--accent-cyan); margin-top:2px;">${formatVnd(fundData.balance)}</div>
         </div>
         <div class="card" style="margin:0; padding:12px; text-align:center;">
@@ -33,30 +33,12 @@ class FundPageController {
         </div>
       </div>
 
-      <!-- 6-Month Income vs Expense Visual Bar Chart -->
-      <div class="card">
-        <div class="card-header-flex" style="margin-bottom:4px;">
-          <div class="card-title">
-            <span class="card-title-icon">📊</span>
-            <span>Thu Chi 6 Tháng Gần Nhất</span>
-          </div>
-          <div style="display:flex; gap:10px; font-size:0.75rem;">
-            <span style="color:var(--accent-emerald); font-weight:700;">🟢 Thu</span>
-            <span style="color:var(--accent-rose); font-weight:700;">🔴 Chi</span>
-          </div>
-        </div>
-
-        <div class="chart-bar-container">
-          ${this.renderBarChart()}
-        </div>
-      </div>
-
-      <!-- Current Active Campaign Card -->
+      <!-- Current Match Payment Session Card -->
       <div class="card" style="background:linear-gradient(135deg, rgba(6,182,212,0.1), rgba(19,27,46,0.9)); border:1px solid rgba(6,182,212,0.3);">
         <div class="card-header-flex">
           <div>
-            <span class="section-badge">ĐỢT THU QUỸ HIỆN TẠI</span>
-            <h3 style="font-size:1.05rem; font-weight:800; margin-top:4px;">${fundData.activeDrive.title}</h3>
+            <span class="section-badge">THU TIỀN TRẬN TUẦN NÀY</span>
+            <h3 style="font-size:1.05rem; font-weight:800; margin-top:4px;">${this.formatDate(fundData.matchSession.date)}</h3>
           </div>
           <button class="btn btn-outline btn-sm" onclick="FundPage.openChecklistModal()">
             📋 Chi Tiết Từng Người
@@ -64,13 +46,20 @@ class FundPageController {
         </div>
 
         <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.85rem; background:rgba(9,13,22,0.5); padding:10px 14px; border-radius:8px;">
-          <div>Mức thu: <strong style="color:var(--accent-gold);">${formatVnd(fundData.activeDrive.amountPerPerson)}/người</strong></div>
-          <div>Hạn nộp: <strong style="color:var(--accent-rose);">${fundData.activeDrive.deadline}</strong></div>
+          <div>Phí trận: <strong style="color:var(--accent-gold);">${formatVnd(fundData.matchSession.fee)}/người</strong></div>
+          <div>Đã đóng: <strong style="color:var(--accent-emerald);">${fundData.matchSession.paidIds.length}/${Store.getPlayers().length}</strong></div>
         </div>
 
-        <div style="margin-top:10px; font-size:0.82rem; color:var(--accent-emerald); font-weight:700;">
-          ✅ Đã hoàn thành: ${fundData.activeDrive.paidIds.length}/${Store.getPlayers().length} thành viên
-        </div>
+        ${isAdmin ? `
+          <div style="display:flex; gap:8px; margin-top:12px; border-top:1px solid var(--border-color); padding-top:12px;">
+            <input type="number" id="session-fee-input" class="form-input" value="${fundData.matchSession.fee}" step="10000" style="flex:1;" placeholder="Phí/người">
+            <input type="date" id="session-date-input" class="form-input" value="${fundData.matchSession.date}" style="flex:1;">
+          </div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="FundPage.saveSessionInfo()">💾 Cập nhật phí/ngày</button>
+            <button class="btn btn-outline btn-sm" style="flex:1;" onclick="FundPage.startNewSession()">🔄 Buổi đá mới</button>
+          </div>
+        ` : ''}
       </div>
 
       <!-- Transaction History Log -->
@@ -107,32 +96,10 @@ class FundPageController {
     this.render();
   }
 
-  renderBarChart() {
-    const months = ['T3', 'T4', 'T5', 'T6', 'T7', 'T8'];
-    const mockData = [
-      { inc: 1800000, exp: 1200000 },
-      { inc: 1950000, exp: 1400000 },
-      { inc: 1650000, exp: 1100000 },
-      { inc: 2100000, exp: 1800000 },
-      { inc: 1950000, exp: 1850000 },
-      { inc: 1950000, exp: 1250000 }
-    ];
-
-    const maxVal = 2500000;
-
-    return mockData.map((d, idx) => {
-      const incH = Math.round((d.inc / maxVal) * 100);
-      const expH = Math.round((d.exp / maxVal) * 100);
-      return `
-        <div class="chart-column">
-          <div class="chart-bars-wrapper">
-            <div class="chart-bar-inc" style="height:${incH}px;" title="Thu: ${d.inc}đ"></div>
-            <div class="chart-bar-exp" style="height:${expH}px;" title="Chi: ${d.exp}đ"></div>
-          </div>
-          <span class="chart-label">${months[idx]}</span>
-        </div>
-      `;
-    }).join('');
+  formatDate(isoDate) {
+    if (!isoDate) return '';
+    const [y, m, d] = isoDate.split('-');
+    return `${d}/${m}/${y}`;
   }
 
   renderTransactions(transactions, formatVnd) {
@@ -164,13 +131,13 @@ class FundPageController {
   openChecklistModal() {
     const players = Store.getPlayers();
     const fund = Store.getFund();
-    const paidIds = fund.activeDrive.paidIds;
+    const paidIds = fund.matchSession.paidIds;
     const isAdmin = Auth.isAdmin();
 
     const container = document.getElementById('fund-checklist-content');
     container.innerHTML = `
       <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">
-        Đợt thu: <strong>${fund.activeDrive.title}</strong> (${new Intl.NumberFormat('vi-VN').format(fund.activeDrive.amountPerPerson)}đ/người)
+        Trận ngày <strong>${this.formatDate(fund.matchSession.date)}</strong> (${new Intl.NumberFormat('vi-VN').format(fund.matchSession.fee)}đ/người)
       </p>
       <div style="display:flex; flex-direction:column; gap:6px; max-height:350px; overflow-y:auto;">
         ${players.map(p => {
@@ -180,11 +147,11 @@ class FundPageController {
               <span style="font-weight:700; font-size:0.88rem;">${p.name} (${p.pos})</span>
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="font-size:0.8rem; font-weight:800; color:${isPaid ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">
-                  ${isPaid ? '✅ ĐÃ NỘP' : '❌ CHƯA NỘP'}
+                  ${isPaid ? '✅ ĐÃ ĐÓNG' : '❌ CHƯA ĐÓNG'}
                 </span>
                 ${isAdmin ? `
                   <button class="btn btn-secondary btn-sm" onclick="FundPage.togglePaid(${p.id})">
-                    ${isPaid ? 'Báo chưa' : 'Báo đã nộp'}
+                    ${isPaid ? 'Báo chưa' : 'Báo đã đóng'}
                   </button>
                 ` : ''}
               </div>
@@ -198,10 +165,27 @@ class FundPageController {
   }
 
   togglePaid(playerId) {
-    Store.toggleFundPayment(playerId);
+    Store.toggleMatchPayment(playerId);
     this.openChecklistModal();
     this.render();
-    App.showToast('Đã cập nhật trạng thái đóng quỹ!', 'info');
+    App.showToast('Đã cập nhật trạng thái đóng tiền!', 'info');
+  }
+
+  saveSessionInfo() {
+    const fee = document.getElementById('session-fee-input').value;
+    const date = document.getElementById('session-date-input').value;
+    Store.updateMatchSessionInfo(fee, date);
+    App.showToast('Đã cập nhật phí & ngày trận đấu!', 'success');
+    this.render();
+  }
+
+  startNewSession() {
+    if (!confirm('Bắt đầu buổi thu tiền mới sẽ xoá danh sách đã đóng tiền của buổi trước. Tiếp tục?')) return;
+    const fee = document.getElementById('session-fee-input').value || 500000;
+    const today = new Date().toISOString().split('T')[0];
+    Store.startNewMatchSession(fee, today);
+    App.showToast('Đã tạo buổi thu tiền mới cho trận tuần này!', 'success');
+    this.render();
   }
 
   openAddFundModal() {

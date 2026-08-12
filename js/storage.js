@@ -50,10 +50,9 @@ const DEFAULT_FUND = {
   balance: 3750000,
   income: 6350000,
   expense: 2600000,
-  activeDrive: {
-    title: "Quỹ Đội Tháng 8/2026",
-    amountPerPerson: 150000,
-    deadline: "15/08/2026",
+  matchSession: {
+    date: "2026-08-09",
+    fee: 500000,
     paidIds: [1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15]
   },
   transactions: [
@@ -91,6 +90,13 @@ class DataStore {
       parsed.nextMatch = parsed.nextMatch || DEFAULT_NEXT_MATCH;
       parsed.notice = parsed.notice || DEFAULT_NOTICE;
       parsed.tactics = parsed.tactics || DEFAULT_TACTICS;
+      if (parsed.fund && !parsed.fund.matchSession) {
+        parsed.fund.matchSession = {
+          date: new Date().toISOString().split('T')[0],
+          fee: 500000,
+          paidIds: []
+        };
+      }
       return parsed;
     } catch (e) {
       console.error('Error parsing stored data', e);
@@ -225,14 +231,29 @@ class DataStore {
     this.save();
   }
 
-  toggleFundPayment(playerId) {
-    const paidIds = this.data.fund.activeDrive.paidIds;
-    const idx = paidIds.indexOf(playerId);
+  toggleMatchPayment(playerId) {
+    const paidIds = this.data.fund.matchSession.paidIds;
+    const idx = paidIds.indexOf(Number(playerId));
     if (idx !== -1) {
       paidIds.splice(idx, 1);
     } else {
-      paidIds.push(playerId);
+      paidIds.push(Number(playerId));
     }
+    this.save();
+  }
+
+  updateMatchSessionInfo(fee, date) {
+    this.data.fund.matchSession.fee = Number(fee);
+    this.data.fund.matchSession.date = date;
+    this.save();
+  }
+
+  startNewMatchSession(fee, date) {
+    this.data.fund.matchSession = {
+      fee: Number(fee),
+      date: date,
+      paidIds: []
+    };
     this.save();
   }
 

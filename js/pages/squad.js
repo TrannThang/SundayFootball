@@ -71,7 +71,7 @@ class SquadPageController {
     const teamColor = teamColors[p.teamId] || '#06b6d4';
 
     return `
-      <div class="fifa-card" style="border-top: 3px solid ${teamColor};" onclick="SquadPage.openEditPlayerModal(${p.id})">
+      <div class="fifa-card" style="border-top: 3px solid ${teamColor};" onclick="PlayerDetail.show(${p.id})">
         <div class="fifa-card-top">
           <div>
             <div class="fifa-ovr">${p.ovr}</div>

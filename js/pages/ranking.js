@@ -77,7 +77,7 @@ class RankingPageController {
 
           <div style="display:flex; flex-direction:column; gap:6px;">
             ${topScorers.length > 0 ? topScorers.map((p, idx) => `
-              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
                 <div style="display:flex; align-items:center; gap:8px;">
                   <span style="font-weight:900; font-size:0.85rem; color:var(--accent-gold); width:18px;">#${idx + 1}</span>
                   <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
@@ -101,7 +101,7 @@ class RankingPageController {
 
           <div style="display:flex; flex-direction:column; gap:6px;">
             ${topAssists.length > 0 ? topAssists.map((p, idx) => `
-              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
                 <div style="display:flex; align-items:center; gap:8px;">
                   <span style="font-weight:900; font-size:0.85rem; color:var(--accent-cyan); width:18px;">#${idx + 1}</span>
                   <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>

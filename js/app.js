@@ -11,6 +11,7 @@ class AppController {
     this.setupNavigation();
     Auth.init();
     this.navigateTo(this.currentPage);
+    if (window.CloudSync) CloudSync.init();
   }
 
   setupNavigation() {

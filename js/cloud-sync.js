@@ -1,73 +1,62 @@
 /* ==========================================================================
-   SUNDAY FOOTBALL - REAL-TIME CLOUD DATA SYNC ENGINE
-   Allows cross-device synchronization (Admin changes on phone A reflect live on phone B)
+   SUNDAY FOOTBALL - REAL-TIME CLOUD DATA SYNC ENGINE (Firebase Realtime DB)
+   Allows instant cross-device synchronization (Admin changes on phone A
+   reflect live on phone B, no refresh needed) via a Firebase websocket
+   listener instead of manual polling.
    ========================================================================== */
 
 class CloudSyncEngine {
   constructor() {
-    // Cloud storage API endpoint (JSONBin / Firestore REST API fallback endpoint)
-    this.binId = '66b9f291e41b4d34e41f02a5'; 
-    this.apiKey = '$2a$10$w8T.NnS4P.M44YlR0W62q.7X3mXW9e4Wz7Q02g2GZg4Z2'; // Cloud API key or fallback endpoint
-    this.syncInterval = null;
-    this.lastSyncHash = '';
-    this.isSyncing = false;
+    this.dbRef = null;
+    this.ready = false;
+    this.applyingRemoteUpdate = false;
+  }
+
+  isConfigured() {
+    return typeof firebase !== 'undefined' &&
+      window.FIREBASE_CONFIG &&
+      window.FIREBASE_CONFIG.databaseURL &&
+      !window.FIREBASE_CONFIG.databaseURL.includes('PASTE_');
   }
 
   init() {
-    // Initial fetch from cloud on load
-    this.pullFromCloud();
+    if (!this.isConfigured()) {
+      console.warn('⚠️ Firebase chưa được cấu hình (js/firebase-config.js) - dữ liệu chỉ lưu trên thiết bị này, không đồng bộ được.');
+      return;
+    }
 
-    // Poll cloud every 6 seconds for live updates on all devices
-    if (this.syncInterval) clearInterval(this.syncInterval);
-    this.syncInterval = setInterval(() => {
-      this.pullFromCloud();
-    }, 6000);
-  }
+    firebase.initializeApp(window.FIREBASE_CONFIG);
+    this.dbRef = firebase.database().ref('sundayFootballData');
 
-  async pullFromCloud() {
-    try {
-      // Using Jsonbin / public cloud store endpoint for instant zero-config cross-device sync
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${this.binId}/latest`, {
-        headers: {
-          'X-Master-Key': '$2a$10$7rK3r0vP2Y.0gZ4J4p8hU.S4f.3hP9r2b6mX0Z4'
-        }
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json && json.record) {
-          const cloudHash = JSON.stringify(json.record);
-          if (cloudHash !== this.lastSyncHash && this.lastSyncHash !== '') {
-            this.lastSyncHash = cloudHash;
-            // Update LocalStorage Store
-            Store.data = json.record;
-            localStorage.setItem('SUNDAY_FOOTBALL_DATA_V2', cloudHash);
-            App.refreshCurrentPage();
-            console.log('⚡ Cloud data synced live from other device!');
-          } else if (this.lastSyncHash === '') {
-            this.lastSyncHash = cloudHash;
-          }
-        }
+    // Seed the cloud once if it's completely empty (first-ever run for this team),
+    // then attach a live listener that fires immediately and on every future change.
+    this.dbRef.once('value').then((snapshot) => {
+      if (!snapshot.exists()) {
+        this.dbRef.set(Store.data);
       }
-    } catch (e) {
-      // Silent catch if offline, falls back seamlessly to LocalStorage
-    }
+      this.ready = true;
+      this.dbRef.on('value', (snap) => this.handleRemoteChange(snap));
+    });
   }
 
-  async pushToCloud(dataObj) {
-    this.lastSyncHash = JSON.stringify(dataObj);
-    try {
-      await fetch(`https://api.jsonbin.io/v3/b/${this.binId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': '$2a$10$7rK3r0vP2Y.0gZ4J4p8hU.S4f.3hP9r2b6mX0Z4'
-        },
-        body: JSON.stringify(dataObj)
-      });
-      console.log('☁️ Data pushed to Cloud successfully!');
-    } catch (e) {
-      console.warn('Offline mode: Saved locally only', e);
-    }
+  handleRemoteChange(snapshot) {
+    const cloudData = snapshot.val();
+    if (!cloudData) return;
+
+    this.applyingRemoteUpdate = true;
+    Store.data = cloudData;
+    localStorage.setItem('SUNDAY_FOOTBALL_DATA_V3', JSON.stringify(cloudData));
+    if (window.App) App.refreshCurrentPage();
+    this.applyingRemoteUpdate = false;
+  }
+
+  pushToCloud(dataObj) {
+    // Avoid re-pushing data that just arrived from the cloud itself.
+    if (this.applyingRemoteUpdate) return;
+    if (!this.ready || !this.dbRef) return;
+    this.dbRef.set(dataObj).catch((e) => {
+      console.warn('Không thể đồng bộ lên cloud (offline?), dữ liệu vẫn được lưu trên máy.', e);
+    });
   }
 }
 
