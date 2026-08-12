@@ -6,7 +6,7 @@ class AuthManager {
   constructor() {
     this.currentUser = this.loadSession();
     this.pinBuffer = '';
-    this.ADMIN_PIN = '9999';
+    this.ADMIN_PIN = '0804';
   }
 
   init() {
@@ -157,7 +157,7 @@ class AuthManager {
       this.closePinModal();
       App.refreshCurrentPage();
     } else {
-      App.showToast(`Mã PIN "${pin}" không đúng! Thử lại (VD: TT123, A001 hoặc 9999)`, 'error');
+      App.showToast(`Mã PIN "${pin}" không đúng! Thử lại (VD: TT123, A001)`, 'error');
       this.clearPin();
     }
   }
