@@ -51,11 +51,10 @@ const DEFAULT_TACTICS = {
 
 const DEFAULT_MATCHDAY = { date: "2026-08-09" };
 
-const DEFAULT_MATCHES = [
-  { id: 1, homeTeam: 1, awayTeam: 2, homeScore: 2, awayScore: 1, status: 'finished', duration: '10 phút', note: 'Đội 1 thắng 2-1 (Chạm 2 ở lại)', scorers: [{ name: 'Trần Thắng', goals: 2 }, { name: 'Hòa Nova', goals: 1 }], matchDate: '2026-08-09' },
-  { id: 2, homeTeam: 2, awayTeam: 3, homeScore: 1, awayScore: 1, status: 'finished', duration: '10 phút', note: 'Hòa 1-1 (Đội 2 ở lâu hơn ra sân)', scorers: [{ name: 'Ngô Quang Tùng', goals: 1 }, { name: 'Xuân Hậu', goals: 1 }], matchDate: '2026-08-09' },
-  { id: 3, homeTeam: 3, awayTeam: 1, homeScore: 0, awayScore: 2, status: 'finished', duration: '8 phút', note: 'Đội 1 thắng 2-0 (Chạm 2 ở lại)', scorers: [{ name: 'Cao Thái Hoài', goals: 1 }, { name: 'Phan Bảo Tuân', goals: 1 }], matchDate: '2026-08-09' }
-];
+// Starts empty - real match results are entered by the admin via "➕ Thêm trận".
+// (Previously seeded with 3 fake demo matches, which polluted the standings and
+// top-scorer boards with results that never actually happened.)
+const DEFAULT_MATCHES = [];
 
 const DEFAULT_FUND = {
   balance: 40000,

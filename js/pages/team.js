@@ -203,7 +203,11 @@ class TeamPageController {
           ` : ''}
         </div>
 
-        ${sortedDates.map(dateKey => `
+        ${sortedDates.length === 0 ? `
+          <div class="card" style="text-align:center; color:var(--text-muted); padding:20px;">
+            Chưa có trận nào được ghi nhận. Bấm "➕ Thêm trận" ở trên để bắt đầu.
+          </div>
+        ` : sortedDates.map(dateKey => `
           <div>
             <div style="font-size:0.78rem; font-weight:800; color:var(--text-muted); margin-bottom:8px; padding-left:2px;">
               📅 ${TeamPage.formatDate(dateKey)} ${dateKey === matchDay.date ? '(hiện tại)' : ''}

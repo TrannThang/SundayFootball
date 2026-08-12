@@ -93,7 +93,9 @@ class RankingPageController {
         </div>
 
         <div style="display:flex; flex-direction:column; gap:8px;">
-          ${matches.filter(m => m.status === 'finished').map((m, idx) => `
+          ${matches.filter(m => m.status === 'finished').length === 0 ? `
+            <div style="text-align:center; color:var(--text-muted); padding:16px;">Chưa có trận nào được ghi nhận</div>
+          ` : matches.filter(m => m.status === 'finished').map((m, idx) => `
             <div style="background:rgba(9,13,22,0.6); padding:10px 14px; border-radius:8px; border:1px solid var(--border-color);">
               <div style="display:flex; justify-content:space-between; font-size:0.88rem; font-weight:800;">
                 <span>Trận ${idx + 1}: Đội ${m.homeTeam} vs Đội ${m.awayTeam}</span>
