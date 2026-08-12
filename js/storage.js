@@ -58,22 +58,18 @@ const DEFAULT_MATCHES = [
 ];
 
 const DEFAULT_FUND = {
-  balance: 3750000,
-  income: 6350000,
-  expense: 2600000,
+  balance: 40000,
+  income: 540000,
+  expense: 500000,
   matchSession: {
-    date: "2026-08-09",
-    fee: 500000,
-    paidIds: [1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15],
+    date: "2026-08-12",
+    fee: 35000,
+    paidIds: [],
     customFees: {}
   },
   transactions: [
-    { id: 1, type: 'income', desc: 'Quỹ tháng 8 - 13 người × 150k', amount: 1950000, date: '2026-08-05' },
-    { id: 2, type: 'expense', desc: 'Tiền sân Sân Thanh Đa', amount: 600000, date: '2026-07-29' },
-    { id: 3, type: 'expense', desc: 'Tiền nước ngọt & trà đá', amount: 200000, date: '2026-07-29' },
-    { id: 4, type: 'expense', desc: 'Tiền sân Sân Chảo Lửa', amount: 600000, date: '2026-07-22' },
-    { id: 5, type: 'income', desc: 'Phạt đi trễ 20 phút', amount: 50000, date: '2026-07-22' },
-    { id: 6, type: 'expense', desc: 'Mua bóng Futsal Động Lực số 4', amount: 450000, date: '2026-07-14' }
+    { id: 1, type: 'income', desc: 'Thu tiền trận tuần trước (09/08) - 18 người × 30k', amount: 540000, date: '2026-08-09' },
+    { id: 2, type: 'expense', desc: 'Tiền sân Sân Thanh Đa (09/08)', amount: 500000, date: '2026-08-09' }
   ]
 };
 

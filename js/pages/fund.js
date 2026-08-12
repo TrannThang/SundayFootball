@@ -224,11 +224,35 @@ class FundPageController {
   }
 
   startNewSession() {
-    if (!confirm('Bắt đầu buổi thu tiền mới sẽ xoá danh sách đã đóng tiền của buổi trước. Tiếp tục?')) return;
-    const fee = document.getElementById('session-fee-input').value || 500000;
+    const fund = Store.getFund();
+    const oldPaidCount = fund.matchSession.paidIds.length;
+    const oldCollected = this.getSessionCollected();
+    const oldDate = this.formatDate(fund.matchSession.date);
+
+    let confirmMsg = `🔄 BẮT ĐẦU BUỔI THU TIỀN MỚI\n\n`;
+    if (oldPaidCount > 0) {
+      confirmMsg += `Buổi cũ (${oldDate}):\n`;
+      confirmMsg += `• Đã thu: ${oldPaidCount} người = ${new Intl.NumberFormat('vi-VN').format(oldCollected)}đ\n`;
+      confirmMsg += `• Số tiền này sẽ được ghi vào lịch sử giao dịch tự động.\n\n`;
+    }
+    confirmMsg += `⚠️ Danh sách đã đóng tiền sẽ được XÓA TRẮNG để bắt đầu buổi mới.\n\nBạn có chắc chắn muốn tiếp tục?`;
+
+    if (!confirm(confirmMsg)) return;
+
+    // Auto-log old session income into transaction history if there were payments
+    if (oldCollected > 0) {
+      Store.addFundTransaction({
+        type: 'income',
+        desc: `Thu tiền trận ${oldDate} - ${oldPaidCount} người`,
+        amount: oldCollected,
+        date: fund.matchSession.date
+      });
+    }
+
+    const fee = document.getElementById('session-fee-input') ? document.getElementById('session-fee-input').value : fund.matchSession.fee;
     const today = new Date().toISOString().split('T')[0];
-    Store.startNewMatchSession(fee, today);
-    App.showToast('Đã tạo buổi thu tiền mới cho trận tuần này!', 'success');
+    Store.startNewMatchSession(fee || 35000, today);
+    App.showToast('✅ Đã tạo buổi thu tiền mới! Danh sách đã reset.', 'success');
     this.render();
   }
 

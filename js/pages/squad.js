@@ -4,7 +4,7 @@
 
 class SquadPageController {
   constructor() {
-    this.currentFilter = 'ALL'; // ALL, GK, DF, MF, FW
+    this.currentFilter = 'ALL'; // ALL, PIV, ALA, FIX, GK
   }
 
   render() {
@@ -16,15 +16,9 @@ class SquadPageController {
     // Sort by OVR descending
     players.sort((a, b) => b.ovr - a.ovr);
 
-    // Apply Position Filter
+    // Apply Position Filter (Sân 5 positions)
     if (this.currentFilter !== 'ALL') {
-      players = players.filter(p => {
-        if (this.currentFilter === 'GK') return p.pos === 'GK';
-        if (this.currentFilter === 'DF') return ['CB', 'LB', 'RB', 'DF'].includes(p.pos);
-        if (this.currentFilter === 'MF') return ['CM', 'CDM', 'CAM', 'LM', 'RM', 'MF'].includes(p.pos);
-        if (this.currentFilter === 'FW') return ['ST', 'LW', 'RW', 'FW'].includes(p.pos);
-        return true;
-      });
+      players = players.filter(p => p.pos === this.currentFilter);
     }
 
     const isAdmin = Auth.isAdmin();
@@ -44,12 +38,12 @@ class SquadPageController {
         ` : ''}
       </div>
 
-      <!-- Filter Bar -->
+      <!-- Filter Bar (Sân 5 Positions) -->
       <div class="filter-tabs">
         <button class="filter-tab-btn ${this.currentFilter === 'ALL' ? 'active' : ''}" onclick="SquadPage.setFilter('ALL')">Tất Cả (${Store.getPlayers().length})</button>
-        <button class="filter-tab-btn ${this.currentFilter === 'FW' ? 'active' : ''}" onclick="SquadPage.setFilter('FW')">FW (Tiền đạo)</button>
-        <button class="filter-tab-btn ${this.currentFilter === 'MF' ? 'active' : ''}" onclick="SquadPage.setFilter('MF')">MF (Tiền vệ)</button>
-        <button class="filter-tab-btn ${this.currentFilter === 'DF' ? 'active' : ''}" onclick="SquadPage.setFilter('DF')">DF (Hậu vệ)</button>
+        <button class="filter-tab-btn ${this.currentFilter === 'PIV' ? 'active' : ''}" onclick="SquadPage.setFilter('PIV')">PIV (Tiền đạo)</button>
+        <button class="filter-tab-btn ${this.currentFilter === 'ALA' ? 'active' : ''}" onclick="SquadPage.setFilter('ALA')">ALA (Cánh)</button>
+        <button class="filter-tab-btn ${this.currentFilter === 'FIX' ? 'active' : ''}" onclick="SquadPage.setFilter('FIX')">FIX (Hậu vệ)</button>
         <button class="filter-tab-btn ${this.currentFilter === 'GK' ? 'active' : ''}" onclick="SquadPage.setFilter('GK')">GK (Thủ môn)</button>
       </div>
 
