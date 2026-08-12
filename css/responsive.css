@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SUNDAY FOOTBALL - RESPONSIVE & SPECIFIC COMPONENT STYLES
+   SUNDAY FOOTBALL - RESPONSIVE & SPECIFIC COMPONENT STYLES (SÂN 5 UPGRADE)
    ========================================================================== */
 
 /* PIN Modal Grid Pad */
@@ -177,7 +177,187 @@
   border-radius: 4px;
 }
 
-/* Player Cards (FIFA Style) */
+/* ==========================================================================
+   SÂN 5 TACTICAL PITCH BOARD (MATCHING USER IMAGE 1)
+   ========================================================================== */
+
+.tactical-pitch-board {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  height: 480px;
+  margin: 0 auto;
+  background: radial-gradient(circle at center, #1b2e24 0%, #0e1a14 100%);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+
+/* Pitch Field Markings */
+.pitch-half-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.pitch-center-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pitch-box-top {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 160px;
+  height: 70px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top: none;
+  border-radius: 0 0 40px 40px;
+  transform: translateX(-50%);
+}
+
+.pitch-box-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 160px;
+  height: 70px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-bottom: none;
+  border-radius: 40px 40px 0 0;
+  transform: translateX(-50%);
+}
+
+/* Tactical Player Nodes on Pitch */
+.pitch-player-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pitch-player-node:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.pitch-player-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 3px solid var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.pitch-player-name {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+  background: rgba(9, 13, 22, 0.8);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Substitutes Bench Bar */
+.bench-container {
+  background: rgba(9, 13, 22, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-top: 14px;
+}
+
+.bench-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bench-chips-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bench-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.bench-chip:hover {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: var(--accent-cyan);
+}
+
+/* ==========================================================================
+   SPIDER RADAR CHART (MATCHING USER IMAGE 2)
+   ========================================================================== */
+
+.radar-chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  text-align: center;
+}
+
+.streak-bonus-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-top: 8px;
+}
+
+/* Sân 5 Position Badges */
+.pos-PIV { color: #ef4444; background: rgba(239, 68, 68, 0.18); }
+.pos-ALA { color: #3b82f6; background: rgba(59, 130, 246, 0.18); }
+.pos-FIX { color: #10b981; background: rgba(16, 185, 129, 0.18); }
+.pos-GK  { color: #f59e0b; background: rgba(245, 158, 11, 0.18); }
+
+/* Squad Grid & Cards */
 .squad-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -321,82 +501,6 @@
 
 .custom-table tr:last-child td {
   border-bottom: none;
-}
-
-/* Fund 6-month chart */
-.chart-bar-container {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  height: 140px;
-  padding-top: 20px;
-  margin-top: 10px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.chart-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  width: 14%;
-}
-
-.chart-bars-wrapper {
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 100px;
-  width: 100%;
-  justify-content: center;
-}
-
-.chart-bar-inc {
-  width: 10px;
-  background: var(--accent-emerald);
-  border-radius: 4px 4px 0 0;
-  transition: height 0.5s ease;
-}
-
-.chart-bar-exp {
-  width: 10px;
-  background: var(--accent-rose);
-  border-radius: 4px 4px 0 0;
-  transition: height 0.5s ease;
-}
-
-.chart-label {
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-/* Drag & Drop Team Builder */
-.team-droppable {
-  min-height: 180px;
-  background: rgba(9, 13, 22, 0.4);
-  border: 2px dashed var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 10px;
-  margin-top: 10px;
-}
-
-.draggable-player {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  margin-bottom: 6px;
-  cursor: grab;
-  user-select: none;
-}
-
-.draggable-player:active {
-  cursor: grabbing;
-  opacity: 0.7;
 }
 
 /* Desktop Adjustments */

@@ -192,6 +192,17 @@
           </div>
         </div>
 
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Thời gian đá:</label>
+            <input type="text" id="match-duration" class="form-input" value="10 phút" placeholder="VD: 10 phút">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Ghi chú thể thức:</label>
+            <input type="text" id="match-note" class="form-input" placeholder="VD: Chạm 2 ở lại / Hòa đội lâu hơn ra">
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="form-label">Cầu thủ ghi bàn / kiến tạo (tùy chọn):</label>
           <div id="match-scorers-container" style="display:flex; flex-direction:column; gap:8px;">
@@ -221,25 +232,19 @@
         <input type="hidden" id="player-edit-id">
         <div class="form-group">
           <label class="form-label">Tên hiển thị:</label>
-          <input type="text" id="player-name" class="form-input" required placeholder="VD: Nguyễn Văn A">
+          <input type="text" id="player-name" class="form-input" required placeholder="VD: Trần Thắng">
         </div>
         <div class="form-group">
-          <label class="form-label">Mã PIN cá nhân (4 chữ số):</label>
-          <input type="text" id="player-pin" class="form-input" required placeholder="VD: 1022" maxlength="6">
+          <label class="form-label">Mã PIN cá nhân:</label>
+          <input type="text" id="player-pin" class="form-input" required placeholder="VD: TT123" maxlength="10">
         </div>
         <div style="display:flex; gap:10px;">
           <div class="form-group" style="flex:1;">
-            <label class="form-label">Vị trí:</label>
+            <label class="form-label">Vị trí (Sân 5):</label>
             <select id="player-pos" class="form-select" required>
-              <option value="ST">ST (Tiền đạo)</option>
-              <option value="LW">LW (Cánh trái)</option>
-              <option value="RW">RW (Cánh phải)</option>
-              <option value="CAM">CAM (Hộ công)</option>
-              <option value="CM">CM (Tiền vệ)</option>
-              <option value="CDM">CDM (Tiền vệ phòng ngự)</option>
-              <option value="LB">LB (Hậu vệ trái)</option>
-              <option value="RB">RB (Hậu vệ phải)</option>
-              <option value="CB">CB (Trung vệ)</option>
+              <option value="PIV">PIV (Pivot - Tiền đạo cắm)</option>
+              <option value="ALA">ALA (Ala - Tiền vệ cánh)</option>
+              <option value="FIX">FIX (Fixo - Hậu vệ chốt)</option>
               <option value="GK">GK (Thủ môn)</option>
             </select>
           </div>
@@ -321,13 +326,14 @@
   </div>
 
   <!-- JavaScript Modules -->
-  <script src="js/storage.js?v=1.1"></script>
-  <script src="js/auth.js?v=1.1"></script>
-  <script src="js/app.js?v=1.1"></script>
-  <script src="js/pages/home.js?v=1.1"></script>
-  <script src="js/pages/team.js?v=1.1"></script>
-  <script src="js/pages/squad.js?v=1.1"></script>
-  <script src="js/pages/fund.js?v=1.1"></script>
-  <script src="js/pages/ranking.js?v=1.1"></script>
+  <script src="js/cloud-sync.js?v=1.3"></script>
+  <script src="js/storage.js?v=1.3"></script>
+  <script src="js/auth.js?v=1.3"></script>
+  <script src="js/app.js?v=1.3"></script>
+  <script src="js/pages/home.js?v=1.3"></script>
+  <script src="js/pages/team.js?v=1.3"></script>
+  <script src="js/pages/squad.js?v=1.3"></script>
+  <script src="js/pages/fund.js?v=1.3"></script>
+  <script src="js/pages/ranking.js?v=1.3"></script>
 </body>
 </html>
