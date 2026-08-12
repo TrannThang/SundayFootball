@@ -13,8 +13,9 @@ class TeamPageController {
     if (!container) return;
 
     const players = Store.getPlayers();
-    const goingPlayers = players.filter(p => p.attendance);
-    const absentPlayers = players.filter(p => !p.attendance);
+    const goingPlayers = players.filter(p => p.attendance === 'going');
+    const absentPlayers = players.filter(p => p.attendance === 'absent');
+    const pendingPlayers = players.filter(p => p.attendance === 'pending');
     const matches = Store.getMatches();
     const isAdmin = Auth.isAdmin();
 
@@ -29,7 +30,7 @@ class TeamPageController {
         </button>
       </div>
 
-      ${this.activeSubTab === 'upcoming' ? this.renderUpcomingView(players, goingPlayers, absentPlayers, isAdmin) : this.renderHistoryView(matches, isAdmin)}
+      ${this.activeSubTab === 'upcoming' ? this.renderUpcomingView(players, goingPlayers, absentPlayers, pendingPlayers, isAdmin) : this.renderHistoryView(matches, isAdmin)}
     `;
   }
 
@@ -43,7 +44,7 @@ class TeamPageController {
     this.render();
   }
 
-  renderUpcomingView(players, goingPlayers, absentPlayers, isAdmin) {
+  renderUpcomingView(players, goingPlayers, absentPlayers, pendingPlayers, isAdmin) {
     // Group players by Team ID (1, 2, 3)
     const team1 = players.filter(p => p.teamId === 1);
     const team2 = players.filter(p => p.teamId === 2);
@@ -61,8 +62,9 @@ class TeamPageController {
         <div>
           <span style="font-size:0.8rem; color:var(--text-secondary);">Thống kê điểm danh:</span>
           <div style="font-size:1.1rem; font-weight:800;">
-            <span style="color:var(--accent-emerald);">✅ Đã đi (${goingPlayers.length})</span> • 
-            <span style="color:var(--accent-rose);">❌ Chưa đi (${absentPlayers.length})</span>
+            <span style="color:var(--accent-emerald);">✅ Đã đi (${goingPlayers.length})</span> •
+            <span style="color:var(--accent-rose);">❌ Vắng (${absentPlayers.length})</span> •
+            <span style="color:var(--accent-gold);">⏳ Chưa vote (${pendingPlayers.length})</span>
           </div>
         </div>
 
@@ -102,6 +104,19 @@ class TeamPageController {
           </div>
         </div>
       ` : ''}
+
+      ${pendingPlayers.length > 0 ? `
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title" style="color:var(--accent-gold); font-size:0.9rem;">
+            ⏳ Chưa vote điểm danh (${pendingPlayers.length} người):
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+            ${pendingPlayers.map(p => `
+              <span class="pos-badge" style="opacity:0.7;">${p.name} (${p.pos})</span>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
     `;
   }
 
@@ -123,8 +138,9 @@ class TeamPageController {
             <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
               <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
                 <span class="pos-badge pos-${p.pos}">${p.pos}</span>
-                <span style="font-weight:700; font-size:0.9rem; ${!p.attendance ? 'text-decoration:line-through; opacity:0.5;' : ''}">${p.name}</span>
-                ${!p.attendance ? '<span style="font-size:0.7rem; color:var(--accent-rose); font-weight:800;">(VẮNG)</span>' : ''}
+                <span style="font-weight:700; font-size:0.9rem; ${p.attendance === 'absent' ? 'text-decoration:line-through; opacity:0.5;' : p.attendance === 'pending' ? 'opacity:0.6;' : ''}">${p.name}</span>
+                ${p.attendance === 'absent' ? '<span style="font-size:0.7rem; color:var(--accent-rose); font-weight:800;">(VẮNG)</span>' : ''}
+                ${p.attendance === 'pending' ? '<span style="font-size:0.7rem; color:var(--accent-gold); font-weight:800;">(CHƯA VOTE)</span>' : ''}
               </div>
 
               <div style="display:flex; align-items:center; gap:10px;">

@@ -8,7 +8,7 @@ class HomePageController {
     if (!container) return;
 
     const players = Store.getPlayers();
-    const goingCount = players.filter(p => p.attendance).length;
+    const goingCount = players.filter(p => p.attendance === 'going').length;
     const totalCount = players.length;
     const nextMatch = Store.getNextMatch();
     const noticeText = Store.getNotice();
@@ -124,21 +124,26 @@ class HomePageController {
           </div>
           <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Bạn có thể nhanh chóng điểm danh giúp thành viên bên dưới:</p>
 
-          <div style="display:flex; gap:8px; align-items:center;">
-            <select id="admin-quick-player-select" class="form-select" style="flex:1;">
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select id="admin-quick-player-select" class="form-select" style="flex:1; min-width:160px;">
               ${Store.getPlayers().map(p => `
-                <option value="${p.id}">${p.name} - ${p.attendance ? '✅ Đã ĐI' : '❌ VẮNG'}</option>
+                <option value="${p.id}">${p.name} - ${p.attendance === 'going' ? '✅ Đã ĐI' : p.attendance === 'absent' ? '❌ VẮNG' : '⏳ Chưa vote'}</option>
               `).join('')}
             </select>
-            <button class="btn btn-success btn-sm" onclick="HomePage.adminToggleAttendance(true)">ĐI</button>
-            <button class="btn btn-danger btn-sm" onclick="HomePage.adminToggleAttendance(false)">VẮNG</button>
+            <button class="btn btn-success btn-sm" onclick="HomePage.adminToggleAttendance('going')">ĐI</button>
+            <button class="btn btn-danger btn-sm" onclick="HomePage.adminToggleAttendance('absent')">VẮNG</button>
+            <button class="btn btn-secondary btn-sm" onclick="HomePage.adminToggleAttendance('pending')">Chưa vote</button>
           </div>
         </div>
       `;
     }
 
     if (currentPlayer) {
-      const isGoing = currentPlayer.attendance;
+      const status = currentPlayer.attendance;
+      const isGoing = status === 'going';
+      const isAbsent = status === 'absent';
+      const statusColor = isGoing ? 'var(--accent-emerald)' : isAbsent ? 'var(--accent-rose)' : 'var(--accent-gold)';
+      const statusLabel = isGoing ? '✅ BẠN SẼ THAM GIA' : isAbsent ? '❌ BẠN BÁO VẮNG' : '⏳ BẠN CHƯA XÁC NHẬN';
       return `
         <div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -148,16 +153,16 @@ class HomePageController {
 
           <div style="font-size:0.9rem; font-weight:700; margin-bottom:10px;">
             Trạng thái hiện tại của bạn:
-            <span style="color:${isGoing ? 'var(--accent-emerald)' : 'var(--accent-rose)'}; font-weight:900;">
-              ${isGoing ? '✅ BẠN SẼ THAM GIA' : '❌ BẠN BÁO VẮNG'}
+            <span style="color:${statusColor}; font-weight:900;">
+              ${statusLabel}
             </span>
           </div>
 
           <div class="attendance-btns-group">
-            <button class="attendance-btn-go" onclick="HomePage.setUserAttendance(true)" style="${isGoing ? 'opacity:1; transform:scale(1.02); box-shadow:0 0 15px rgba(16,185,129,0.5);' : 'opacity:0.65;'}">
+            <button class="attendance-btn-go" onclick="HomePage.setUserAttendance('going')" style="${isGoing ? 'opacity:1; transform:scale(1.02); box-shadow:0 0 15px rgba(16,185,129,0.5);' : 'opacity:0.65;'}">
               ⚽ TÔI SẼ ĐI
             </button>
-            <button class="attendance-btn-no" onclick="HomePage.setUserAttendance(false)" style="${!isGoing ? 'opacity:1; transform:scale(1.02); box-shadow:0 0 15px rgba(244,63,94,0.5);' : 'opacity:0.65;'}">
+            <button class="attendance-btn-no" onclick="HomePage.setUserAttendance('absent')" style="${isAbsent ? 'opacity:1; transform:scale(1.02); box-shadow:0 0 15px rgba(244,63,94,0.5);' : 'opacity:0.65;'}">
               ❌ BÁO VẮNG
             </button>
           </div>
@@ -170,7 +175,8 @@ class HomePageController {
     const player = Auth.getCurrentPlayer();
     if (player) {
       Store.updatePlayerAttendance(player.id, status);
-      App.showToast(`Đã cập nhật trạng thái: ${status ? 'THAM GIA ✅' : 'BÁO VẮNG ❌'}`, status ? 'success' : 'info');
+      const label = status === 'going' ? 'THAM GIA ✅' : status === 'absent' ? 'BÁO VẮNG ❌' : 'CHƯA VOTE ⏳';
+      App.showToast(`Đã cập nhật trạng thái: ${label}`, status === 'going' ? 'success' : 'info');
       App.refreshCurrentPage();
     }
   }
@@ -181,7 +187,8 @@ class HomePageController {
       const playerId = select.value;
       Store.updatePlayerAttendance(playerId, status);
       const player = Store.getPlayerById(playerId);
-      App.showToast(`Admin đã điểm danh cho ${player ? player.name : ''}: ${status ? 'ĐI' : 'VẮNG'}`, 'success');
+      const label = status === 'going' ? 'ĐI' : status === 'absent' ? 'VẮNG' : 'CHƯA VOTE';
+      App.showToast(`Admin đã điểm danh cho ${player ? player.name : ''}: ${label}`, 'success');
       App.refreshCurrentPage();
     }
   }

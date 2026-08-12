@@ -32,12 +32,17 @@ class AuthManager {
     const avatarEl = document.getElementById('header-avatar');
     const nameEl = document.getElementById('header-username');
     const attendanceCounter = document.getElementById('header-attendance-count');
+    const memberCountEl = document.getElementById('header-member-count');
 
     // Update Attendance Counter
     const players = Store.getPlayers();
-    const goingCount = players.filter(p => p.attendance).length;
+    const goingCount = players.filter(p => p.attendance === 'going').length;
+    const pendingCount = players.filter(p => p.attendance === 'pending').length;
     if (attendanceCounter) {
-      attendanceCounter.textContent = `${goingCount}/${players.length} Đi`;
+      attendanceCounter.textContent = `${goingCount}/${players.length} Đi` + (pendingCount > 0 ? ` • ${pendingCount} chưa vote` : '');
+    }
+    if (memberCountEl) {
+      memberCountEl.textContent = `${players.length} thành viên`;
     }
 
     if (this.currentUser) {

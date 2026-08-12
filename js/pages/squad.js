@@ -79,7 +79,8 @@ class SquadPageController {
           </div>
           <div style="text-align:right;">
             <span style="font-size:0.68rem; font-weight:800; color:${teamColor};">${teamNames[p.teamId]}</span>
-            ${p.attendance ? `<div style="font-size:0.65rem; color:var(--accent-emerald); font-weight:800;">🏅 Điểm danh</div>` : ''}
+            ${p.attendance === 'going' ? `<div style="font-size:0.65rem; color:var(--accent-emerald); font-weight:800;">🏅 Điểm danh</div>` : ''}
+            ${p.attendance === 'pending' ? `<div style="font-size:0.65rem; color:var(--accent-gold); font-weight:800;">⏳ Chưa vote</div>` : ''}
           </div>
         </div>
 

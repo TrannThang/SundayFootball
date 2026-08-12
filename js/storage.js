@@ -6,29 +6,38 @@ const STORAGE_KEY = 'SUNDAY_FOOTBALL_DATA_V3';
 
 // 21 Official Real Members Roster with Sân 5 (Futsal) Positions
 const DEFAULT_PLAYERS = [
-  { id: 1, name: 'Trần Thắng', fullName: 'Trần Thắng', pos: 'PIV', ovr: 74, teamId: 1, pin: 'TT123', altPin: '1001', stats: { pac: 78, sho: 85, pas: 60, dri: 72, def: 38, phy: 70 }, attendance: true, goals: 5, assists: 2, streak: 3 },
-  { id: 2, name: 'Phan Bảo Tuân', fullName: 'Phan Bảo Tuân', pos: 'ALA', ovr: 73, teamId: 1, pin: 'PBT456', altPin: '1002', stats: { pac: 72, sho: 70, pas: 84, dri: 78, def: 45, phy: 55 }, attendance: true, goals: 2, assists: 4, streak: 3 },
-  { id: 3, name: 'Cao Thái Hiệp', fullName: 'Cao Thái Hiệp', pos: 'FIX', ovr: 71, teamId: 1, pin: 'CTH789', altPin: '1003', stats: { pac: 62, sho: 48, pas: 60, dri: 52, def: 82, phy: 84 }, attendance: true, goals: 0, assists: 1, streak: 3 },
-  { id: 4, name: 'Cao Thái Hoài', fullName: 'Cao Thái Hoài', pos: 'ALA', ovr: 71, teamId: 1, pin: 'CTH012', altPin: '1004', stats: { pac: 86, sho: 65, pas: 70, dri: 80, def: 35, phy: 60 }, attendance: true, goals: 3, assists: 3, streak: 2 },
-  { id: 5, name: 'Duy', fullName: 'Duy', pos: 'FIX', ovr: 70, teamId: 1, pin: 'DUY345', altPin: '1005', stats: { pac: 65, sho: 55, pas: 75, dri: 68, def: 72, phy: 78 }, attendance: true, goals: 1, assists: 1, streak: 3 },
-  { id: 6, name: 'Hiển', fullName: 'Hiển', pos: 'ALA', ovr: 68, teamId: 1, pin: 'HIE678', altPin: '1006', stats: { pac: 80, sho: 45, pas: 65, dri: 70, def: 70, phy: 72 }, attendance: false, goals: 0, assists: 2, streak: 1 },
-  { id: 7, name: 'Huy Hoàng', fullName: 'Huy Hoàng', pos: 'GK', ovr: 68, teamId: 1, pin: 'HH901', altPin: '1007', stats: { pac: 40, sho: 30, pas: 50, dri: 35, def: 20, phy: 75 }, attendance: true, goals: 0, assists: 0, streak: 3 },
+  { id: 1, name: 'Trần Thắng', fullName: 'Trần Thắng', pos: 'PIV', ovr: 74, teamId: 1, pin: 'TT123', altPin: '1001', stats: { pac: 78, sho: 85, pas: 60, dri: 72, def: 38, phy: 70 }, attendance: 'going', goals: 5, assists: 2, streak: 3 },
+  { id: 2, name: 'Phan Bảo Tuân', fullName: 'Phan Bảo Tuân', pos: 'ALA', ovr: 73, teamId: 1, pin: 'PBT456', altPin: '1002', stats: { pac: 72, sho: 70, pas: 84, dri: 78, def: 45, phy: 55 }, attendance: 'going', goals: 2, assists: 4, streak: 3 },
+  { id: 3, name: 'Cao Thái Hiệp', fullName: 'Cao Thái Hiệp', pos: 'FIX', ovr: 71, teamId: 1, pin: 'CTH789', altPin: '1003', stats: { pac: 62, sho: 48, pas: 60, dri: 52, def: 82, phy: 84 }, attendance: 'going', goals: 0, assists: 1, streak: 3 },
+  { id: 4, name: 'Cao Thái Hoài', fullName: 'Cao Thái Hoài', pos: 'ALA', ovr: 71, teamId: 1, pin: 'CTH012', altPin: '1004', stats: { pac: 86, sho: 65, pas: 70, dri: 80, def: 35, phy: 60 }, attendance: 'going', goals: 3, assists: 3, streak: 2 },
+  { id: 5, name: 'Duy', fullName: 'Duy', pos: 'FIX', ovr: 70, teamId: 1, pin: 'DUY345', altPin: '1005', stats: { pac: 65, sho: 55, pas: 75, dri: 68, def: 72, phy: 78 }, attendance: 'going', goals: 1, assists: 1, streak: 3 },
+  { id: 6, name: 'Hiển', fullName: 'Hiển', pos: 'ALA', ovr: 68, teamId: 1, pin: 'HIE678', altPin: '1006', stats: { pac: 80, sho: 45, pas: 65, dri: 70, def: 70, phy: 72 }, attendance: 'absent', goals: 0, assists: 2, streak: 1 },
+  { id: 7, name: 'Huy Hoàng', fullName: 'Huy Hoàng', pos: 'GK', ovr: 68, teamId: 1, pin: 'HH901', altPin: '1007', stats: { pac: 40, sho: 30, pas: 50, dri: 35, def: 20, phy: 75 }, attendance: 'going', goals: 0, assists: 0, streak: 3 },
 
-  { id: 8, name: 'Hòa Nova', fullName: 'Hòa Nova', pos: 'PIV', ovr: 73, teamId: 2, pin: 'HN234', altPin: '1008', stats: { pac: 82, sho: 88, pas: 58, dri: 70, def: 40, phy: 72 }, attendance: true, goals: 6, assists: 1, streak: 3 },
-  { id: 9, name: 'Ngô Quang Tùng', fullName: 'Ngô Quang Tùng', pos: 'ALA', ovr: 72, teamId: 2, pin: 'NQT567', altPin: '1009', stats: { pac: 70, sho: 68, pas: 86, dri: 80, def: 42, phy: 52 }, attendance: true, goals: 2, assists: 5, streak: 3 },
-  { id: 10, name: 'Phong Phú', fullName: 'Phong Phú', pos: 'FIX', ovr: 70, teamId: 2, pin: 'PP890', altPin: '1010', stats: { pac: 60, sho: 45, pas: 58, dri: 50, def: 84, phy: 86 }, attendance: true, goals: 1, assists: 0, streak: 3 },
-  { id: 11, name: 'Ngọc Phúc', fullName: 'Ngọc Phúc', pos: 'ALA', ovr: 69, teamId: 2, pin: 'NP123', altPin: '1011', stats: { pac: 84, sho: 62, pas: 72, dri: 76, def: 40, phy: 64 }, attendance: false, goals: 2, assists: 1, streak: 1 },
-  { id: 12, name: 'Phú Thanh', fullName: 'Phú Thanh', pos: 'FIX', ovr: 68, teamId: 2, pin: 'PT456', altPin: '1012', stats: { pac: 66, sho: 58, pas: 78, dri: 68, def: 58, phy: 72 }, attendance: true, goals: 1, assists: 2, streak: 2 },
-  { id: 13, name: 'Anh Vân', fullName: 'Anh Vân', pos: 'ALA', ovr: 67, teamId: 2, pin: 'AV789', altPin: '1013', stats: { pac: 78, sho: 42, pas: 62, dri: 68, def: 72, phy: 70 }, attendance: true, goals: 0, assists: 1, streak: 3 },
-  { id: 14, name: 'Võ Phi', fullName: 'Võ Phi', pos: 'GK', ovr: 67, teamId: 2, pin: 'VP012', altPin: '1014', stats: { pac: 38, sho: 28, pas: 48, dri: 32, def: 18, phy: 73 }, attendance: true, goals: 0, assists: 0, streak: 3 },
+  { id: 8, name: 'Hòa Nova', fullName: 'Hòa Nova', pos: 'PIV', ovr: 73, teamId: 2, pin: 'HN234', altPin: '1008', stats: { pac: 82, sho: 88, pas: 58, dri: 70, def: 40, phy: 72 }, attendance: 'going', goals: 6, assists: 1, streak: 3 },
+  { id: 9, name: 'Ngô Quang Tùng', fullName: 'Ngô Quang Tùng', pos: 'ALA', ovr: 72, teamId: 2, pin: 'NQT567', altPin: '1009', stats: { pac: 70, sho: 68, pas: 86, dri: 80, def: 42, phy: 52 }, attendance: 'going', goals: 2, assists: 5, streak: 3 },
+  { id: 10, name: 'Phong Phú', fullName: 'Phong Phú', pos: 'FIX', ovr: 70, teamId: 2, pin: 'PP890', altPin: '1010', stats: { pac: 60, sho: 45, pas: 58, dri: 50, def: 84, phy: 86 }, attendance: 'going', goals: 1, assists: 0, streak: 3 },
+  { id: 11, name: 'Ngọc Phúc', fullName: 'Ngọc Phúc', pos: 'ALA', ovr: 69, teamId: 2, pin: 'NP123', altPin: '1011', stats: { pac: 84, sho: 62, pas: 72, dri: 76, def: 40, phy: 64 }, attendance: 'absent', goals: 2, assists: 1, streak: 1 },
+  { id: 12, name: 'Phú Thanh', fullName: 'Phú Thanh', pos: 'FIX', ovr: 68, teamId: 2, pin: 'PT456', altPin: '1012', stats: { pac: 66, sho: 58, pas: 78, dri: 68, def: 58, phy: 72 }, attendance: 'going', goals: 1, assists: 2, streak: 2 },
+  { id: 13, name: 'Anh Vân', fullName: 'Anh Vân', pos: 'ALA', ovr: 67, teamId: 2, pin: 'AV789', altPin: '1013', stats: { pac: 78, sho: 42, pas: 62, dri: 68, def: 72, phy: 70 }, attendance: 'going', goals: 0, assists: 1, streak: 3 },
+  { id: 14, name: 'Võ Phi', fullName: 'Võ Phi', pos: 'GK', ovr: 67, teamId: 2, pin: 'VP012', altPin: '1014', stats: { pac: 38, sho: 28, pas: 48, dri: 32, def: 18, phy: 73 }, attendance: 'going', goals: 0, assists: 0, streak: 3 },
 
-  { id: 15, name: 'Xuân Hậu', fullName: 'Xuân Hậu', pos: 'PIV', ovr: 72, teamId: 3, pin: 'XH345', altPin: '1015', stats: { pac: 76, sho: 82, pas: 62, dri: 74, def: 36, phy: 68 }, attendance: true, goals: 4, assists: 2, streak: 3 },
-  { id: 16, name: 'Xuân Phát', fullName: 'Xuân Phát', pos: 'ALA', ovr: 70, teamId: 3, pin: 'XP678', altPin: '1016', stats: { pac: 68, sho: 60, pas: 82, dri: 72, def: 50, phy: 68 }, attendance: true, goals: 2, assists: 3, streak: 3 },
-  { id: 17, name: 'Viết Khánh', fullName: 'Viết Khánh', pos: 'FIX', ovr: 69, teamId: 3, pin: 'VK901', altPin: '1017', stats: { pac: 58, sho: 42, pas: 56, dri: 48, def: 80, phy: 82 }, attendance: false, goals: 0, assists: 0, streak: 1 },
-  { id: 18, name: 'Viết Đạt', fullName: 'Viết Đạt', pos: 'ALA', ovr: 69, teamId: 3, pin: 'VD234', altPin: '1018', stats: { pac: 82, sho: 66, pas: 74, dri: 78, def: 38, phy: 62 }, attendance: true, goals: 3, assists: 2, streak: 3 },
-  { id: 19, name: 'Huy', fullName: 'Huy', pos: 'FIX', ovr: 67, teamId: 3, pin: 'HUY567', altPin: '1019', stats: { pac: 62, sho: 50, pas: 70, dri: 60, def: 70, phy: 76 }, attendance: true, goals: 1, assists: 1, streak: 2 },
-  { id: 20, name: 'Tú', fullName: 'Tú', pos: 'ALA', ovr: 66, teamId: 3, pin: 'TU890', altPin: '1020', stats: { pac: 76, sho: 40, pas: 60, dri: 66, def: 68, phy: 68 }, attendance: true, goals: 0, assists: 1, streak: 3 },
-  { id: 21, name: 'Đại', fullName: 'Đại', pos: 'GK', ovr: 66, teamId: 3, pin: 'DAI123', altPin: '1021', stats: { pac: 36, sho: 26, pas: 46, dri: 30, def: 16, phy: 70 }, attendance: true, goals: 0, assists: 0, streak: 3 }
+  { id: 15, name: 'Xuân Hậu', fullName: 'Xuân Hậu', pos: 'PIV', ovr: 72, teamId: 3, pin: 'XH345', altPin: '1015', stats: { pac: 76, sho: 82, pas: 62, dri: 74, def: 36, phy: 68 }, attendance: 'going', goals: 4, assists: 2, streak: 3 },
+  { id: 16, name: 'Xuân Phát', fullName: 'Xuân Phát', pos: 'ALA', ovr: 70, teamId: 3, pin: 'XP678', altPin: '1016', stats: { pac: 68, sho: 60, pas: 82, dri: 72, def: 50, phy: 68 }, attendance: 'going', goals: 2, assists: 3, streak: 3 },
+  { id: 17, name: 'Viết Khánh', fullName: 'Viết Khánh', pos: 'FIX', ovr: 69, teamId: 3, pin: 'VK901', altPin: '1017', stats: { pac: 58, sho: 42, pas: 56, dri: 48, def: 80, phy: 82 }, attendance: 'absent', goals: 0, assists: 0, streak: 1 },
+  { id: 18, name: 'Viết Đạt', fullName: 'Viết Đạt', pos: 'ALA', ovr: 69, teamId: 3, pin: 'VD234', altPin: '1018', stats: { pac: 82, sho: 66, pas: 74, dri: 78, def: 38, phy: 62 }, attendance: 'going', goals: 3, assists: 2, streak: 3 },
+  { id: 19, name: 'Huy', fullName: 'Huy', pos: 'FIX', ovr: 67, teamId: 3, pin: 'HUY567', altPin: '1019', stats: { pac: 62, sho: 50, pas: 70, dri: 60, def: 70, phy: 76 }, attendance: 'going', goals: 1, assists: 1, streak: 2 },
+  { id: 20, name: 'Tú', fullName: 'Tú', pos: 'ALA', ovr: 66, teamId: 3, pin: 'TU890', altPin: '1020', stats: { pac: 76, sho: 40, pas: 60, dri: 66, def: 68, phy: 68 }, attendance: 'going', goals: 0, assists: 1, streak: 3 },
+  { id: 21, name: 'Đại', fullName: 'Đại', pos: 'GK', ovr: 66, teamId: 3, pin: 'DAI123', altPin: '1021', stats: { pac: 36, sho: 26, pas: 46, dri: 30, def: 16, phy: 70 }, attendance: 'going', goals: 0, assists: 0, streak: 3 },
+
+  // New members - chưa có ai xác nhận điểm danh
+  { id: 22, name: 'Ben', fullName: 'Ben', pos: 'ALA', ovr: 65, teamId: 1, pin: 'BEN123', altPin: '1022', stats: { pac: 68, sho: 60, pas: 65, dri: 68, def: 45, phy: 62 }, attendance: 'pending', goals: 0, assists: 0, streak: 0 },
+  { id: 23, name: 'Thái Bảo', fullName: 'Thái Bảo', pos: 'ALA', ovr: 65, teamId: 2, pin: 'TB456', altPin: '1023', stats: { pac: 68, sho: 60, pas: 65, dri: 68, def: 45, phy: 62 }, attendance: 'pending', goals: 0, assists: 0, streak: 0 },
+  { id: 24, name: 'Khanh', fullName: 'Khanh', pos: 'FIX', ovr: 65, teamId: 3, pin: 'KH789', altPin: '1024', stats: { pac: 58, sho: 42, pas: 58, dri: 50, def: 75, phy: 75 }, attendance: 'pending', goals: 0, assists: 0, streak: 0 },
+  { id: 25, name: 'Huy Dê', fullName: 'Huy Dê', pos: 'PIV', ovr: 65, teamId: 1, pin: 'HD012', altPin: '1025', stats: { pac: 68, sho: 74, pas: 55, dri: 62, def: 38, phy: 64 }, attendance: 'pending', goals: 0, assists: 0, streak: 0 },
+  { id: 26, name: 'Khoa Ù', fullName: 'Khoa Ù', pos: 'FIX', ovr: 65, teamId: 2, pin: 'KU345', altPin: '1026', stats: { pac: 55, sho: 40, pas: 56, dri: 48, def: 76, phy: 78 }, attendance: 'pending', goals: 0, assists: 0, streak: 0 },
+  { id: 27, name: 'Trí', fullName: 'Trí', pos: 'ALA', ovr: 65, teamId: 3, pin: 'TRI678', altPin: '1027', stats: { pac: 68, sho: 60, pas: 65, dri: 68, def: 45, phy: 62 }, attendance: 'pending', goals: 0, assists: 0, streak: 0 },
+  { id: 28, name: 'Vũ Mai', fullName: 'Vũ Mai', pos: 'ALA', ovr: 65, teamId: 1, pin: 'VM901', altPin: '1028', stats: { pac: 68, sho: 60, pas: 65, dri: 68, def: 45, phy: 62 }, attendance: 'pending', goals: 0, assists: 0, streak: 0 }
 ];
 
 const DEFAULT_TACTICS = {
@@ -97,17 +106,37 @@ class DataStore {
     }
   }
 
+  // Firebase Realtime Database silently rewrites any object whose keys look like
+  // a dense array index (e.g. {1:.., 2:.., 3:..}) into a real JS array with holes
+  // (e.g. [null, .., ..]). Converts that shape back into a plain {key: value} object.
+  static coerceKeyedObject(value) {
+    if (Array.isArray(value)) {
+      const obj = {};
+      value.forEach((v, idx) => { if (v !== null && v !== undefined) obj[idx] = v; });
+      return obj;
+    }
+    return value || {};
+  }
+
   // Back-fills any fields missing from older/incomplete data (local OR from the
   // cloud) so every render can safely assume the full shape exists.
   normalize(parsed) {
     parsed.nextMatch = parsed.nextMatch || DEFAULT_NEXT_MATCH;
     parsed.notice = parsed.notice || DEFAULT_NOTICE;
-    parsed.tactics = parsed.tactics || DEFAULT_TACTICS;
     parsed.matches = parsed.matches || DEFAULT_MATCHES;
     parsed.matchDay = parsed.matchDay || DEFAULT_MATCHDAY;
     parsed.matches.forEach(m => {
       if (!m.matchDate) m.matchDate = parsed.matchDay.date;
     });
+
+    parsed.tactics = parsed.tactics || DEFAULT_TACTICS;
+    parsed.tactics.pitchStarters = DataStore.coerceKeyedObject(parsed.tactics.pitchStarters);
+    [1, 2, 3].forEach(t => {
+      if (!Array.isArray(parsed.tactics.pitchStarters[t])) {
+        parsed.tactics.pitchStarters[t] = (DEFAULT_TACTICS.pitchStarters[t] || []).slice();
+      }
+    });
+
     parsed.fund = parsed.fund || DEFAULT_FUND;
     if (!parsed.fund.matchSession) {
       parsed.fund.matchSession = {
@@ -117,7 +146,18 @@ class DataStore {
         customFees: {}
       };
     }
-    parsed.fund.matchSession.customFees = parsed.fund.matchSession.customFees || {};
+    parsed.fund.matchSession.paidIds = parsed.fund.matchSession.paidIds || [];
+    parsed.fund.matchSession.customFees = DataStore.coerceKeyedObject(parsed.fund.matchSession.customFees);
+
+    parsed.players = parsed.players || DEFAULT_PLAYERS;
+    parsed.players.forEach(p => {
+      // Legacy boolean attendance -> 3-state string ('going' | 'absent' | 'pending')
+      if (typeof p.attendance === 'boolean') {
+        p.attendance = p.attendance ? 'going' : 'absent';
+      }
+      p.attendance = p.attendance || 'pending';
+    });
+
     return parsed;
   }
 
@@ -160,10 +200,11 @@ class DataStore {
     );
   }
 
+  // status: 'going' | 'absent' | 'pending'
   updatePlayerAttendance(playerId, status) {
     const p = this.getPlayerById(playerId);
     if (p) {
-      p.attendance = Boolean(status);
+      p.attendance = status;
       this.save();
     }
   }
@@ -177,7 +218,7 @@ class DataStore {
     } else {
       playerObj.id = Date.now();
       playerObj.teamId = 1;
-      playerObj.attendance = true;
+      playerObj.attendance = 'pending';
       playerObj.goals = 0;
       playerObj.assists = 0;
       playerObj.streak = 1;
@@ -353,8 +394,8 @@ class DataStore {
   }
 
   autoBalanceTeams() {
-    const attendees = [...this.data.players].filter(p => p.attendance);
-    const nonAttendees = [...this.data.players].filter(p => !p.attendance);
+    const attendees = [...this.data.players].filter(p => p.attendance === 'going');
+    const nonAttendees = [...this.data.players].filter(p => p.attendance !== 'going');
 
     attendees.sort((a, b) => b.ovr - a.ovr);
 
