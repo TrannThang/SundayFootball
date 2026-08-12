@@ -11,8 +11,9 @@ class RankingPageController {
     const players = Store.getPlayers();
     const standings = this.calculateStandings(matches);
 
-    // Top Scorers sorted by goals descending
-    const topScorers = [...players].filter(p => p.goals > 0).sort((a, b) => b.goals - a.goals).slice(0, 5);
+    // Top Scorers computed live from real match history (not a stored counter),
+    // so it can never drift out of sync with the matches shown below.
+    const topScorers = this.calculateTopScorers(matches, players);
 
     container.innerHTML = `
       <!-- Standings Table Card -->
@@ -78,7 +79,7 @@ class RankingPageController {
                 <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
                 <span class="team-badge team-badge-${p.teamId}" style="font-size:0.65rem;">Đội ${p.teamId}</span>
               </div>
-              <span style="font-weight:900; font-size:0.95rem; color:var(--accent-cyan);">${p.goals} bàn</span>
+              <span style="font-weight:900; font-size:0.95rem; color:var(--accent-cyan);">${p.matchGoals} bàn</span>
             </div>
           `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:10px;">Chưa có dữ liệu bàn thắng</div>'}
         </div>
@@ -108,6 +109,24 @@ class RankingPageController {
         </div>
       </div>
     `;
+  }
+
+  calculateTopScorers(matches, players) {
+    const goalsByName = {};
+    matches.forEach(m => {
+      if (m.status === 'finished' && m.scorers) {
+        m.scorers.forEach(s => {
+          const key = s.name.toLowerCase();
+          goalsByName[key] = (goalsByName[key] || 0) + (s.goals || 1);
+        });
+      }
+    });
+
+    return players
+      .map(p => ({ ...p, matchGoals: goalsByName[p.name.toLowerCase()] || 0 }))
+      .filter(p => p.matchGoals > 0)
+      .sort((a, b) => b.matchGoals - a.matchGoals)
+      .slice(0, 5);
   }
 
   calculateStandings(matches) {

@@ -93,6 +93,17 @@ class AppController {
     }
   }
 
+  // Returns today's date as YYYY-MM-DD using the browser's LOCAL calendar day,
+  // not UTC (new Date().toISOString() shifts to UTC and can land on the wrong
+  // day for Vietnam users late at night / early morning).
+  todayLocalISO() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   // Toast Notification System
   showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');

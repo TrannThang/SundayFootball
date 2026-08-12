@@ -249,9 +249,13 @@ class FundPageController {
       });
     }
 
-    const fee = document.getElementById('session-fee-input') ? document.getElementById('session-fee-input').value : fund.matchSession.fee;
-    const today = new Date().toISOString().split('T')[0];
-    Store.startNewMatchSession(fee || 35000, today);
+    const feeInput = document.getElementById('session-fee-input');
+    const dateInput = document.getElementById('session-date-input');
+    const fee = feeInput && feeInput.value ? feeInput.value : fund.matchSession.fee;
+    // Use whatever date the admin picked in the field (falls back to local
+    // today only if they left it blank) - it must NOT be silently overridden.
+    const newDate = dateInput && dateInput.value ? dateInput.value : App.todayLocalISO();
+    Store.startNewMatchSession(fee || 500000, newDate);
     App.showToast('✅ Đã tạo buổi thu tiền mới! Danh sách đã reset.', 'success');
     this.render();
   }
@@ -259,7 +263,7 @@ class FundPageController {
   openAddFundModal() {
     document.getElementById('fund-desc').value = '';
     document.getElementById('fund-amount').value = '';
-    document.getElementById('fund-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('fund-date').value = App.todayLocalISO();
     App.openModal('fund-modal');
   }
 

@@ -262,7 +262,7 @@ class TeamPageController {
   }
 
   startNewMatchDay() {
-    const today = new Date().toISOString().split('T')[0];
+    const today = App.todayLocalISO();
     const input = prompt('Nhập ngày Chủ Nhật mới (YYYY-MM-DD):', today);
     if (!input) return;
     Store.startNewMatchDay(input.trim());

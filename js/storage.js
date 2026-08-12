@@ -135,8 +135,10 @@ class DataStore {
 
     parsed.fund = parsed.fund || DEFAULT_FUND;
     if (!parsed.fund.matchSession) {
+      const d = new Date();
+      const localToday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       parsed.fund.matchSession = {
-        date: new Date().toISOString().split('T')[0],
+        date: localToday,
         fee: 500000,
         paidIds: [],
         customFees: {}
@@ -262,6 +264,10 @@ class DataStore {
     }
   }
 
+  // Goal totals are derived live from match.scorers across all matches (see
+  // RankingPage.calculateTopScorers) rather than tracked as a running counter
+  // on each player - that avoided a bug where the counter drifted out of sync
+  // with the actual match history whenever a result was corrected.
   updateMatchResult(matchId, homeScore, awayScore, duration = '10 phút', note = '', scorers = []) {
     const match = this.data.matches.find(m => m.id === Number(matchId));
     if (match) {
@@ -271,14 +277,6 @@ class DataStore {
       match.note = note;
       match.status = 'finished';
       match.scorers = scorers;
-
-      scorers.forEach(s => {
-        const p = this.data.players.find(player => player.name.toLowerCase() === s.name.toLowerCase());
-        if (p) {
-          p.goals = (p.goals || 0) + (s.goals || 1);
-        }
-      });
-
       this.save();
     }
   }
