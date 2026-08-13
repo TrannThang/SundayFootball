@@ -30,7 +30,7 @@ class TeamPageController {
         </button>
       </div>
 
-      ${this.activeSubTab === 'upcoming' ? this.renderUpcomingView(players, goingPlayers, absentPlayers, pendingPlayers, isAdmin) : this.renderHistoryView(matches, isAdmin)}
+      ${this.activeSubTab === 'upcoming' ? this.renderUpcomingView(goingPlayers, absentPlayers, pendingPlayers, isAdmin) : this.renderHistoryView(matches, isAdmin)}
     `;
   }
 
@@ -44,11 +44,12 @@ class TeamPageController {
     this.render();
   }
 
-  renderUpcomingView(players, goingPlayers, absentPlayers, pendingPlayers, isAdmin) {
-    // Group players by Team ID (1, 2, 3)
-    const team1 = players.filter(p => p.teamId === 1);
-    const team2 = players.filter(p => p.teamId === 2);
-    const team3 = players.filter(p => p.teamId === 3);
+  renderUpcomingView(goingPlayers, absentPlayers, pendingPlayers, isAdmin) {
+    // Team cards only show players who confirmed 'going' - absent/pending players
+    // are listed separately below, not mixed into the 3 team boxes.
+    const team1 = goingPlayers.filter(p => p.teamId === 1);
+    const team2 = goingPlayers.filter(p => p.teamId === 2);
+    const team3 = goingPlayers.filter(p => p.teamId === 3);
 
     const calcAvgOvr = (teamList) => {
       if (!teamList.length) return 0;

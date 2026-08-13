@@ -394,9 +394,10 @@ class DataStore {
     this.save();
   }
 
+  // Only splits players who confirmed 'going' this week - absent/pending players
+  // are left out of the 3 teams entirely, not just visually dimmed.
   autoBalanceTeams() {
     const attendees = [...this.data.players].filter(p => p.attendance === 'going');
-    const nonAttendees = [...this.data.players].filter(p => p.attendance !== 'going');
 
     attendees.sort((a, b) => b.ovr - a.ovr);
 
@@ -421,10 +422,6 @@ class DataStore {
           currentTeamIndex--;
         }
       }
-    });
-
-    nonAttendees.forEach((player, idx) => {
-      player.teamId = (idx % 3) + 1;
     });
 
     // Update starters for pitch 5
