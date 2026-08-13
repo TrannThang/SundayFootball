@@ -75,10 +75,10 @@ const DEFAULT_FUND = {
 const DEFAULT_NOTICE = "📢 Thông báo Sân 5: Chủ Nhật tuần này đá 18h - 19h30 tại Sân Thanh Đa. Thể thức 3 đội luân phiên (Đá 10 phút, ai ghi 2 bàn trước thì ở lại, hòa đội ở lâu hơn ra sân)!";
 
 const DEFAULT_NEXT_MATCH = {
-  date: "Chủ Nhật, 17/08/2026",
+  date: "2026-08-16", // plain ISO date - the weekday label is always computed from this, never stored as text
   time: "18h - 19h30",
   venue: "Sân Thanh Đa, Bình Thạnh (Sân 5)",
-  targetDate: "2026-08-17T18:00:00"
+  targetDate: "2026-08-16T18:00:00"
 };
 
 // Data Store Class
@@ -117,6 +117,14 @@ class DataStore {
   // cloud) so every render can safely assume the full shape exists.
   normalize(parsed) {
     parsed.nextMatch = parsed.nextMatch || DEFAULT_NEXT_MATCH;
+    // Legacy data stored a hand-typed "Chủ Nhật, 17/08/2026" string that could
+    // (and did) go stale/wrong. Migrate it to a plain ISO date, pulled from the
+    // still-valid targetDate, so the weekday label can always be computed fresh.
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(parsed.nextMatch.date)) {
+      parsed.nextMatch.date = parsed.nextMatch.targetDate
+        ? parsed.nextMatch.targetDate.split('T')[0]
+        : DEFAULT_NEXT_MATCH.date;
+    }
     parsed.notice = parsed.notice || DEFAULT_NOTICE;
     parsed.matches = parsed.matches || DEFAULT_MATCHES;
     parsed.matchDay = parsed.matchDay || DEFAULT_MATCHDAY;

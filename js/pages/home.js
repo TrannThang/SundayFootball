@@ -22,7 +22,7 @@ class HomePageController {
           <div class="section-badge">⚽ BUỔI ĐÁ SẮP TỚI</div>
           ${Auth.isAdmin() ? `<button class="btn btn-outline btn-sm" onclick="HomePage.editNextMatch()" style="padding:2px 8px; font-size:0.75rem;">✏️ Sửa lịch</button>` : ''}
         </div>
-        <h2 style="font-size:1.2rem; font-weight:800; color:var(--text-primary); margin:4px 0;">${nextMatch.date}</h2>
+        <h2 style="font-size:1.2rem; font-weight:800; color:var(--text-primary); margin:4px 0;">${this.formatMatchDayLabel(nextMatch.date)}</h2>
         <p style="font-size:0.85rem; color:var(--text-secondary);">⏰ ${nextMatch.time} • 📍 ${nextMatch.venue}</p>
 
         <!-- Countdown Timer -->
@@ -100,6 +100,16 @@ class HomePageController {
     `;
 
     this.startCountdown(nextMatch.targetDate);
+  }
+
+  // Computes the Vietnamese weekday name from the ISO date itself, so it can
+  // never drift out of sync with the actual date the way a stored text label could.
+  formatMatchDayLabel(isoDate) {
+    if (!isoDate) return '';
+    const weekdayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    const [y, m, d] = isoDate.split('-');
+    const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+    return `${weekdayNames[dateObj.getDay()]}, ${d}/${m}/${y}`;
   }
 
   renderAttendanceSection(currentUser, currentPlayer) {
@@ -195,12 +205,23 @@ class HomePageController {
 
   editNextMatch() {
     const current = Store.getNextMatch();
+    const newDate = prompt("Nhập ngày đá tới (YYYY-MM-DD):", current.date);
+    if (newDate === null) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate.trim())) {
+      App.showToast("Ngày không đúng định dạng YYYY-MM-DD!", "error");
+      return;
+    }
     const newVenue = prompt("Nhập địa điểm sân mới:", current.venue);
     if (newVenue === null) return;
     const newTime = prompt("Nhập giờ đá mới:", current.time);
     if (newTime === null) return;
 
-    Store.updateNextMatch({ venue: newVenue.trim(), time: newTime.trim() });
+    Store.updateNextMatch({
+      date: newDate.trim(),
+      venue: newVenue.trim(),
+      time: newTime.trim(),
+      targetDate: `${newDate.trim()}T18:00:00`
+    });
     App.showToast("Cập nhật thông tin trận đấu thành công!", "success");
     App.refreshCurrentPage();
   }
