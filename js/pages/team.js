@@ -98,11 +98,11 @@ class TeamPageController {
           <div class="card-title" style="color:var(--text-muted); font-size:0.9rem;">
             ❌ Danh sách báo vắng (${absentPlayers.length} người):
           </div>
-          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
-            ${absentPlayers.map(p => `
-              <span class="pos-badge" style="opacity:0.7;">${p.name} (${p.pos})</span>
-            `).join('')}
-          </div>
+          ${this.manualEditMode && isAdmin ? this.renderAssignableList(absentPlayers) : `
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+              ${absentPlayers.map(p => `<span class="pos-badge" style="opacity:0.7;">${p.name} (${p.pos})</span>`).join('')}
+            </div>
+          `}
         </div>
       ` : ''}
 
@@ -111,13 +111,35 @@ class TeamPageController {
           <div class="card-title" style="color:var(--accent-gold); font-size:0.9rem;">
             ⏳ Chưa vote điểm danh (${pendingPlayers.length} người):
           </div>
-          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
-            ${pendingPlayers.map(p => `
-              <span class="pos-badge" style="opacity:0.7;">${p.name} (${p.pos})</span>
-            `).join('')}
-          </div>
+          ${this.manualEditMode && isAdmin ? this.renderAssignableList(pendingPlayers) : `
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+              ${pendingPlayers.map(p => `<span class="pos-badge" style="opacity:0.7;">${p.name} (${p.pos})</span>`).join('')}
+            </div>
+          `}
         </div>
       ` : ''}
+    `;
+  }
+
+  // Manual-edit list for absent/pending players: lets admin drop any of them
+  // straight into a team (this also confirms them as 'going').
+  renderAssignableList(players) {
+    return `
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+        ${players.map(p => `
+          <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px;">
+            <span style="font-weight:700; font-size:0.88rem;">${p.name} (${p.pos})</span>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <select id="assign-team-${p.id}" class="form-select" style="padding:2px 6px; font-size:0.75rem;">
+                <option value="1">Đội 1</option>
+                <option value="2">Đội 2</option>
+                <option value="3">Đội 3</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="TeamPage.assignToTeam(${p.id})">➕ Vào đội</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     `;
   }
 
@@ -303,6 +325,15 @@ class TeamPageController {
   changePlayerTeam(playerId, targetTeamId) {
     Store.swapPlayerTeam(playerId, targetTeamId);
     App.showToast('Đã chuyển cầu thủ sang đội mới!', 'info');
+    this.render();
+  }
+
+  assignToTeam(playerId) {
+    const select = document.getElementById(`assign-team-${playerId}`);
+    if (!select) return;
+    Store.assignPlayerToTeam(playerId, select.value);
+    const player = Store.getPlayerById(playerId);
+    App.showToast(`Đã thêm ${player ? player.name : ''} vào Đội ${select.value}!`, 'success');
     this.render();
   }
 

@@ -440,6 +440,17 @@ class DataStore {
       this.save();
     }
   }
+
+  // Manually places an absent/pending player into a team - this also confirms
+  // them as 'going', since being placed on a team implies they're playing.
+  assignPlayerToTeam(playerId, targetTeamId) {
+    const p = this.getPlayerById(playerId);
+    if (p) {
+      p.teamId = Number(targetTeamId);
+      p.attendance = 'going';
+      this.save();
+    }
+  }
 }
 
 window.Store = new DataStore();
