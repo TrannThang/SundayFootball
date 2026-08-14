@@ -150,6 +150,10 @@ class DataStore {
     }
     parsed.fund.matchSession.paidIds = parsed.fund.matchSession.paidIds || [];
     parsed.fund.matchSession.customFees = DataStore.coerceKeyedObject(parsed.fund.matchSession.customFees);
+    parsed.fund.transactions = parsed.fund.transactions || [];
+    parsed.fund.balance = parsed.fund.balance || 0;
+    parsed.fund.income = parsed.fund.income || 0;
+    parsed.fund.expense = parsed.fund.expense || 0;
 
     parsed.players = parsed.players || DEFAULT_PLAYERS;
     parsed.players.forEach(p => {
