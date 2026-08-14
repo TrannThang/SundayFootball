@@ -250,7 +250,9 @@ class TeamPageController {
     return `
       <div class="card" style="margin-bottom:0;">
         <div class="card-header-flex" style="margin-bottom:8px;">
-          <span style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">${m.status === 'finished' ? 'ĐÃ ĐÁ' : 'CHƯA CÓ TỶ SỐ'}</span>
+          <span style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">
+            ${m.status === 'finished' ? 'ĐÃ ĐÁ' : 'CHƯA CÓ TỶ SỐ'}${m.startTime && m.endTime ? ` • ⏰ ${m.startTime} - ${m.endTime}` : ''}
+          </span>
           ${isAdmin ? `
             <div style="display:flex; gap:6px;">
               <button class="btn btn-outline btn-sm" onclick="TeamPage.openMatchModal(${m.id})">✏️ Nhập tỷ số</button>
@@ -349,8 +351,8 @@ class TeamPageController {
     document.getElementById('match-away-name').textContent = teamNames[match.awayTeam];
     document.getElementById('match-home-score').value = match.homeScore || 0;
     document.getElementById('match-away-score').value = match.awayScore || 0;
-    document.getElementById('match-duration').value = match.duration || '10 phút';
-    document.getElementById('match-note').value = match.note || '';
+    document.getElementById('match-start-time').value = match.startTime || '';
+    document.getElementById('match-end-time').value = match.endTime || '';
 
     // Render scorers
     const scorersContainer = document.getElementById('match-scorers-container');
@@ -387,8 +389,21 @@ class TeamPageController {
     const matchId = Number(document.getElementById('match-index-input').value);
     const homeScore = document.getElementById('match-home-score').value;
     const awayScore = document.getElementById('match-away-score').value;
-    const duration = document.getElementById('match-duration').value;
-    const note = document.getElementById('match-note').value;
+    const startTime = document.getElementById('match-start-time').value;
+    const endTime = document.getElementById('match-end-time').value;
+
+    if (startTime && endTime) {
+      const [sh, sm] = startTime.split(':').map(Number);
+      const [eh, em] = endTime.split(':').map(Number);
+      const minutes = (eh * 60 + em) - (sh * 60 + sm);
+      if (minutes <= 0) {
+        App.showToast('Giờ kết thúc phải sau giờ bắt đầu!', 'error');
+        return;
+      }
+      if (minutes > 10) {
+        App.showToast(`⚠️ Trận này dài ${minutes} phút, vượt quá 10 phút quy định nhưng vẫn được lưu.`, 'info');
+      }
+    }
 
     const scorerRows = document.querySelectorAll('#match-scorers-container > div');
     const scorers = [];
@@ -404,7 +419,7 @@ class TeamPageController {
       }
     });
 
-    Store.updateMatchResult(matchId, homeScore, awayScore, duration, note, scorers);
+    Store.updateMatchResult(matchId, homeScore, awayScore, startTime, endTime, scorers);
     App.showToast('Cập nhật tỷ số trận đấu & BXH thành công! ⚽', 'success');
     App.closeModal('match-modal');
     this.render();

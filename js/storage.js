@@ -57,19 +57,16 @@ const DEFAULT_MATCHDAY = { date: "2026-08-09" };
 const DEFAULT_MATCHES = [];
 
 const DEFAULT_FUND = {
-  balance: 40000,
-  income: 540000,
-  expense: 500000,
+  balance: 0,
+  income: 0,
+  expense: 0,
   matchSession: {
     date: "2026-08-12",
     fee: 35000,
     paidIds: [],
     customFees: {}
   },
-  transactions: [
-    { id: 1, type: 'income', desc: 'Thu tiền trận tuần trước (09/08) - 18 người × 30k', amount: 540000, date: '2026-08-09' },
-    { id: 2, type: 'expense', desc: 'Tiền sân Sân Thanh Đa (09/08)', amount: 500000, date: '2026-08-09' }
-  ]
+  transactions: []
 };
 
 const DEFAULT_NOTICE = "📢 Thông báo Sân 5: Chủ Nhật tuần này đá 18h - 19h30 tại Sân Thanh Đa. Thể thức 3 đội luân phiên (Đá 10 phút, ai ghi 2 bàn trước thì ở lại, hòa đội ở lâu hơn ra sân)!";
@@ -253,8 +250,8 @@ class DataStore {
       homeScore: 0,
       awayScore: 0,
       status: 'pending',
-      duration: '10 phút',
-      note: '',
+      startTime: '',
+      endTime: '',
       scorers: [],
       matchDate: this.getMatchDay().date
     };
@@ -275,13 +272,13 @@ class DataStore {
   // RankingPage.calculateTopScorers) rather than tracked as a running counter
   // on each player - that avoided a bug where the counter drifted out of sync
   // with the actual match history whenever a result was corrected.
-  updateMatchResult(matchId, homeScore, awayScore, duration = '10 phút', note = '', scorers = []) {
+  updateMatchResult(matchId, homeScore, awayScore, startTime = '', endTime = '', scorers = []) {
     const match = this.data.matches.find(m => m.id === Number(matchId));
     if (match) {
       match.homeScore = Number(homeScore);
       match.awayScore = Number(awayScore);
-      match.duration = duration;
-      match.note = note;
+      match.startTime = startTime;
+      match.endTime = endTime;
       match.status = 'finished';
       match.scorers = scorers;
       this.save();

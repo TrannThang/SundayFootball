@@ -191,14 +191,12 @@
           </div>
         </div>
 
-        <div style="display:flex; gap:10px;">
-          <div class="form-group" style="flex:1;">
-            <label class="form-label">Thời gian đá:</label>
-            <input type="text" id="match-duration" class="form-input" value="10 phút" placeholder="VD: 10 phút">
-          </div>
-          <div class="form-group" style="flex:1;">
-            <label class="form-label">Ghi chú thể thức:</label>
-            <input type="text" id="match-note" class="form-input" placeholder="VD: Chạm 2 ở lại / Hòa đội lâu hơn ra">
+        <div class="form-group">
+          <label class="form-label">Thời gian đá (khung 18h00 - 19h30, tối đa 10 phút/trận):</label>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:6px;">
+            <input type="time" id="match-start-time" class="form-input" style="flex:1;">
+            <span style="font-weight:800;">-</span>
+            <input type="time" id="match-end-time" class="form-input" style="flex:1;">
           </div>
         </div>
 
