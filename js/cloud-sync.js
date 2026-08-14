@@ -63,6 +63,29 @@ class CloudSyncEngine {
       console.warn('Không thể đồng bộ lên cloud (offline?), dữ liệu vẫn được lưu trên máy.', e);
     });
   }
+
+  // Writes ONLY one field instead of the whole tree. Used for high-concurrency
+  // actions (many different phones voting attendance around the same time) so
+  // one person's stale local copy can't clobber someone else's newer change -
+  // pushToCloud()'s full-tree set() would otherwise overwrite everything.
+  pushFieldUpdate(path, value) {
+    if (this.applyingRemoteUpdate) return;
+    if (!this.ready || !this.dbRef) return;
+    this.dbRef.child(path).set(value).catch((e) => {
+      console.warn('Không thể đồng bộ trường dữ liệu lên cloud (offline?), dữ liệu vẫn được lưu trên máy.', e);
+    });
+  }
+
+  // Merges several sibling fields under one path in a single write (Firebase
+  // update(), not set()) - unlike pushFieldUpdate, this does NOT wipe out any
+  // other fields under that same path.
+  pushMultiFieldUpdate(path, fields) {
+    if (this.applyingRemoteUpdate) return;
+    if (!this.ready || !this.dbRef) return;
+    this.dbRef.child(path).update(fields).catch((e) => {
+      console.warn('Không thể đồng bộ dữ liệu lên cloud (offline?), dữ liệu vẫn được lưu trên máy.', e);
+    });
+  }
 }
 
 window.CloudSync = new CloudSyncEngine();

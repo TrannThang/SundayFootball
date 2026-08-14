@@ -195,7 +195,7 @@ class HomePageController {
     const select = document.getElementById('admin-quick-player-select');
     if (select) {
       const playerId = select.value;
-      Store.updatePlayerAttendance(playerId, status);
+      Store.updatePlayerAttendance(playerId, status, 'admin');
       const player = Store.getPlayerById(playerId);
       const label = status === 'going' ? 'ĐI' : status === 'absent' ? 'VẮNG' : 'CHƯA VOTE';
       App.showToast(`Admin đã điểm danh cho ${player ? player.name : ''}: ${label}`, 'success');

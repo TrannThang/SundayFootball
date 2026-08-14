@@ -104,6 +104,21 @@ class AppController {
     return `${y}-${m}-${day}`;
   }
 
+  // Renders an ISO timestamp as a short Vietnamese relative-time string
+  // (e.g. "5 phút trước", "hôm qua"), for showing when someone voted.
+  formatRelativeTime(isoString) {
+    if (!isoString) return '';
+    const diffMs = Date.now() - new Date(isoString).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'vừa xong';
+    if (mins < 60) return `${mins} phút trước`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    if (days === 1) return 'hôm qua';
+    return `${days} ngày trước`;
+  }
+
   // Toast Notification System
   showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');

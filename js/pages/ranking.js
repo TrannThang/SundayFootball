@@ -11,9 +11,10 @@ class RankingPageController {
     const players = Store.getPlayers();
     const standings = this.calculateStandings(matches);
 
-    // Top Scorers computed live from real match history (not a stored counter),
-    // so it can never drift out of sync with the matches shown below.
+    // Top Scorers/Assists computed live from real match history (not a stored
+    // counter), so they can never drift out of sync with the matches shown below.
     const topScorers = this.calculateTopScorers(matches, players);
+    const topAssists = this.calculateTopAssists(matches, players);
 
     container.innerHTML = `
       <!-- Standings Table Card -->
@@ -85,6 +86,30 @@ class RankingPageController {
         </div>
       </div>
 
+      <!-- Top Assists Section -->
+      <div class="card">
+        <div class="card-header-flex">
+          <div class="card-title">
+            <span class="card-title-icon">🎯</span>
+            <span>Vua Kiến Tạo</span>
+          </div>
+          <span style="font-size:0.72rem; color:var(--accent-cyan); font-weight:800;">TOP ASSISTS</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          ${topAssists.length > 0 ? topAssists.map((p, idx) => `
+            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:900; font-size:0.85rem; color:var(--accent-cyan); width:18px;">#${idx + 1}</span>
+                <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
+                <span class="team-badge team-badge-${p.teamId}" style="font-size:0.65rem;">Đội ${p.teamId}</span>
+              </div>
+              <span style="font-weight:900; font-size:0.95rem; color:var(--accent-emerald);">${p.matchAssists} kiến tạo</span>
+            </div>
+          `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:10px;">Chưa có dữ liệu kiến tạo</div>'}
+        </div>
+      </div>
+
       <!-- Match History List -->
       <div class="card" style="margin-top:14px;">
         <div class="card-title" style="margin-bottom:10px;">
@@ -103,7 +128,7 @@ class RankingPageController {
               </div>
               ${m.scorers && m.scorers.length > 0 ? `
                 <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px;">
-                  ⚽ ${m.scorers.map(s => `${s.name} (${s.goals})`).join(', ')}
+                  ⚽ ${m.scorers.map(s => `${s.name}${s.assist ? ` (KT: ${s.assist})` : ''}`).join(', ')}
                 </div>
               ` : ''}
             </div>
@@ -128,6 +153,26 @@ class RankingPageController {
       .map(p => ({ ...p, matchGoals: goalsByName[p.name.toLowerCase()] || 0 }))
       .filter(p => p.matchGoals > 0)
       .sort((a, b) => b.matchGoals - a.matchGoals)
+      .slice(0, 5);
+  }
+
+  calculateTopAssists(matches, players) {
+    const assistsByName = {};
+    matches.forEach(m => {
+      if (m.status === 'finished' && m.scorers) {
+        m.scorers.forEach(s => {
+          if (s.assist) {
+            const key = s.assist.toLowerCase();
+            assistsByName[key] = (assistsByName[key] || 0) + 1;
+          }
+        });
+      }
+    });
+
+    return players
+      .map(p => ({ ...p, matchAssists: assistsByName[p.name.toLowerCase()] || 0 }))
+      .filter(p => p.matchAssists > 0)
+      .sort((a, b) => b.matchAssists - a.matchAssists)
       .slice(0, 5);
   }
 

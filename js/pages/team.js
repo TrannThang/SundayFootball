@@ -70,12 +70,15 @@ class TeamPageController {
         </div>
 
         ${isAdmin ? `
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn btn-primary btn-sm" onclick="TeamPage.autoBalance()">
               ⚡ Chia Đội Tự Động
             </button>
             <button class="btn btn-secondary btn-sm" onclick="TeamPage.toggleManualEdit()">
               ${this.manualEditMode ? '✅ Xong' : '✏️ Sửa'}
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="TeamPage.resetAllAttendance()">
+              🔄 Reset điểm danh
             </button>
           </div>
         ` : ''}
@@ -98,11 +101,7 @@ class TeamPageController {
           <div class="card-title" style="color:var(--text-muted); font-size:0.9rem;">
             ❌ Danh sách báo vắng (${absentPlayers.length} người):
           </div>
-          ${this.manualEditMode && isAdmin ? this.renderAssignableList(absentPlayers) : `
-            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
-              ${absentPlayers.map(p => `<span class="pos-badge" style="opacity:0.7;">${p.name} (${p.pos})</span>`).join('')}
-            </div>
-          `}
+          ${this.manualEditMode && isAdmin ? this.renderAssignableList(absentPlayers) : this.renderVoteList(absentPlayers)}
         </div>
       ` : ''}
 
@@ -111,14 +110,30 @@ class TeamPageController {
           <div class="card-title" style="color:var(--accent-gold); font-size:0.9rem;">
             ⏳ Chưa vote điểm danh (${pendingPlayers.length} người):
           </div>
-          ${this.manualEditMode && isAdmin ? this.renderAssignableList(pendingPlayers) : `
-            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
-              ${pendingPlayers.map(p => `<span class="pos-badge" style="opacity:0.7;">${p.name} (${p.pos})</span>`).join('')}
-            </div>
-          `}
+          ${this.manualEditMode && isAdmin ? this.renderAssignableList(pendingPlayers) : this.renderVoteList(pendingPlayers)}
         </div>
       ` : ''}
     `;
+  }
+
+  // Shows who voted when (and whether admin voted for them) for absent/pending lists.
+  renderVoteList(players) {
+    return `
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+        ${players.map(p => `
+          <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:6px 12px; border-radius:8px;">
+            <span style="font-weight:700; font-size:0.85rem;">${p.name} (${p.pos})</span>
+            ${this.renderVoteTimeLabel(p)}
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderVoteTimeLabel(p) {
+    if (!p.votedAt) return `<span style="font-size:0.7rem; color:var(--text-muted);">chưa bấm gì</span>`;
+    const who = p.votedBy === 'admin' ? ' • Admin bấm' : '';
+    return `<span style="font-size:0.7rem; color:var(--text-muted);">${App.formatRelativeTime(p.votedAt)}${who}</span>`;
   }
 
   // Manual-edit list for absent/pending players: lets admin drop any of them
@@ -128,7 +143,10 @@ class TeamPageController {
       <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
         ${players.map(p => `
           <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px;">
-            <span style="font-weight:700; font-size:0.88rem;">${p.name} (${p.pos})</span>
+            <div>
+              <span style="font-weight:700; font-size:0.88rem;">${p.name} (${p.pos})</span><br>
+              ${this.renderVoteTimeLabel(p)}
+            </div>
             <div style="display:flex; gap:6px; align-items:center;">
               <select id="assign-team-${p.id}" class="form-select" style="padding:2px 6px; font-size:0.75rem;">
                 <option value="1">Đội 1</option>
@@ -167,8 +185,9 @@ class TeamPageController {
               </div>
 
               <div style="display:flex; align-items:center; gap:10px;">
+                ${p.votedAt ? `<span style="font-size:0.68rem; color:var(--text-muted);">${App.formatRelativeTime(p.votedAt)}${p.votedBy === 'admin' ? ' • Admin' : ''}</span>` : ''}
                 <span style="font-weight:900; font-size:0.9rem; color:var(--ovr-gold);">${p.ovr}</span>
-                
+
                 ${this.manualEditMode && isAdmin ? `
                   <select onchange="TeamPage.changePlayerTeam(${p.id}, this.value)" class="form-select" style="padding:2px 6px; font-size:0.75rem;">
                     <option value="1" ${p.teamId === 1 ? 'selected' : ''}>Đội 1</option>
@@ -277,7 +296,7 @@ class TeamPageController {
 
         ${m.scorers && m.scorers.length > 0 ? `
           <div style="margin-top:10px; font-size:0.8rem; color:var(--text-secondary); background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px;">
-            ⚽ <strong>Ghi bàn:</strong> ${m.scorers.map(s => `${s.name} (${s.goals} bàn)`).join(', ')}
+            ⚽ <strong>Ghi bàn:</strong> ${m.scorers.map(s => `${s.name}${s.assist ? ` (KT: ${s.assist})` : ''}`).join(', ')}
           </div>
         ` : ''}
       </div>
@@ -324,6 +343,13 @@ class TeamPageController {
     this.render();
   }
 
+  resetAllAttendance() {
+    if (!confirm('Đặt lại điểm danh của TẤT CẢ mọi người về "chưa vote"? Ai cũng sẽ cần vote lại từ đầu cho tuần mới.')) return;
+    Store.resetAllAttendance();
+    App.showToast('Đã đặt lại điểm danh toàn đội về "chưa vote"!', 'success');
+    App.refreshCurrentPage();
+  }
+
   changePlayerTeam(playerId, targetTeamId) {
     Store.swapPlayerTeam(playerId, targetTeamId);
     App.showToast('Đã chuyển cầu thủ sang đội mới!', 'info');
@@ -359,26 +385,39 @@ class TeamPageController {
     scorersContainer.innerHTML = '';
 
     if (match.scorers && match.scorers.length > 0) {
-      match.scorers.forEach(s => this.addScorerRow(s.name, s.goals));
+      match.scorers.forEach(s => {
+        // Legacy matches stored one row per scorer with a goal count; expand
+        // those into one row per goal so old data still opens cleanly.
+        const goalCount = s.goals || 1;
+        for (let i = 0; i < goalCount; i++) {
+          this.addScorerRow(s.name, i === 0 ? (s.assist || '') : '');
+        }
+      });
     } else {
-      this.addScorerRow('', 1);
+      this.addScorerRow('', '');
     }
 
     App.openModal('match-modal');
   }
 
-  addScorerRow(name = '', goals = 1) {
+  addScorerRow(name = '', assist = '') {
     const container = document.getElementById('match-scorers-container');
     if (!container) return;
+
+    const playerOptions = (selected) => Store.getPlayers()
+      .map(p => `<option value="${p.name}" ${p.name === selected ? 'selected' : ''}>${p.name} (${p.pos})</option>`).join('');
 
     const div = document.createElement('div');
     div.style.cssText = 'display:flex; gap:8px; align-items:center;';
     div.innerHTML = `
       <select class="form-select scorer-name-select" style="flex:2;">
-        <option value="">-- Chọn cầu thủ --</option>
-        ${Store.getPlayers().map(p => `<option value="${p.name}" ${p.name === name ? 'selected' : ''}>${p.name} (${p.pos})</option>`).join('')}
+        <option value="">-- Ai ghi bàn --</option>
+        ${playerOptions(name)}
       </select>
-      <input type="number" class="form-input scorer-goals-input" min="1" value="${goals}" style="flex:1; text-align:center;">
+      <select class="form-select scorer-assist-select" style="flex:2;">
+        <option value="">-- Không kiến tạo --</option>
+        ${playerOptions(assist)}
+      </select>
       <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>
     `;
     container.appendChild(div);
@@ -405,16 +444,17 @@ class TeamPageController {
       }
     }
 
+    // One row = one goal, each with an optional assist.
     const scorerRows = document.querySelectorAll('#match-scorers-container > div');
     const scorers = [];
 
     scorerRows.forEach(row => {
       const nameSelect = row.querySelector('.scorer-name-select');
-      const goalsInput = row.querySelector('.scorer-goals-input');
+      const assistSelect = row.querySelector('.scorer-assist-select');
       if (nameSelect && nameSelect.value) {
         scorers.push({
           name: nameSelect.value,
-          goals: Number(goalsInput.value || 1)
+          assist: (assistSelect && assistSelect.value) || null
         });
       }
     });

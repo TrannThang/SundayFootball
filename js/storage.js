@@ -206,13 +206,31 @@ class DataStore {
     );
   }
 
-  // status: 'going' | 'absent' | 'pending'
-  updatePlayerAttendance(playerId, status) {
-    const p = this.getPlayerById(playerId);
-    if (p) {
-      p.attendance = status;
-      this.save();
+  // status: 'going' | 'absent' | 'pending'; votedBy: 'self' | 'admin'
+  // Pushes only this one player's fields (not the whole tree) - many different
+  // phones can hit this within the same minute, and a full-tree save from one
+  // stale phone would otherwise silently revert everyone else's votes.
+  updatePlayerAttendance(playerId, status, votedBy = 'self') {
+    const idx = this.data.players.findIndex(p => p.id === Number(playerId));
+    if (idx !== -1) {
+      const votedAt = new Date().toISOString();
+      this.data.players[idx].attendance = status;
+      this.data.players[idx].votedAt = votedAt;
+      this.data.players[idx].votedBy = votedBy;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+      if (window.CloudSync) CloudSync.pushMultiFieldUpdate(`players/${idx}`, { attendance: status, votedAt, votedBy });
+      if (window.TelegramNotify) TelegramNotify.notifyVote(this.data.players[idx].name, status, votedBy);
     }
+  }
+
+  // Puts every player back to 'pending' so the team can vote fresh for a new week.
+  resetAllAttendance() {
+    this.data.players.forEach(p => {
+      p.attendance = 'pending';
+      p.votedAt = null;
+      p.votedBy = null;
+    });
+    this.save();
   }
 
   savePlayer(playerObj) {
@@ -449,6 +467,8 @@ class DataStore {
     if (p) {
       p.teamId = Number(targetTeamId);
       p.attendance = 'going';
+      p.votedAt = new Date().toISOString();
+      p.votedBy = 'admin';
       this.save();
     }
   }
