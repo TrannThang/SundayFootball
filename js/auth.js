@@ -6,7 +6,7 @@ class AuthManager {
   constructor() {
     this.currentUser = this.loadSession();
     this.pinBuffer = '';
-    this.ADMIN_PIN = '0804';
+    this.ADMIN_PIN = '8428';
   }
 
   init() {

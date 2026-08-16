@@ -20,7 +20,12 @@ class HomePageController {
       <div class="card countdown-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <div class="section-badge">⚽ BUỔI ĐÁ SẮP TỚI</div>
-          ${Auth.isAdmin() ? `<button class="btn btn-outline btn-sm" onclick="HomePage.editNextMatch()" style="padding:2px 8px; font-size:0.75rem;">✏️ Sửa lịch</button>` : ''}
+          ${Auth.isAdmin() ? `
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="HomePage.editNextMatch()" style="padding:2px 8px; font-size:0.75rem;">✏️ Sửa lịch</button>
+              <button class="btn btn-primary btn-sm" onclick="HomePage.startNewWeek()" style="padding:2px 8px; font-size:0.75rem;">🔄 Tuần Mới</button>
+            </div>
+          ` : ''}
         </div>
         <h2 style="font-size:1.2rem; font-weight:800; color:var(--text-primary); margin:4px 0;">${this.formatMatchDayLabel(nextMatch.date)}</h2>
         <p style="font-size:0.85rem; color:var(--text-secondary);">⏰ ${nextMatch.time} • 📍 ${nextMatch.venue}</p>
@@ -201,6 +206,29 @@ class HomePageController {
       App.showToast(`Admin đã điểm danh cho ${player ? player.name : ''}: ${label}`, 'success');
       App.refreshCurrentPage();
     }
+  }
+
+  startNewWeek() {
+    const suggested = App.todayLocalISO();
+    const input = prompt('Nhập ngày Chủ Nhật mới (YYYY-MM-DD):', suggested);
+    if (!input) return;
+    const dateStr = input.trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      App.showToast('Ngày không đúng định dạng YYYY-MM-DD!', 'error');
+      return;
+    }
+    if (!confirm(
+      `🔄 BẮT ĐẦU TUẦN MỚI (${dateStr})\n\n` +
+      `Việc này sẽ:\n` +
+      `• Đổi ngày trận sắp tới\n` +
+      `• Đặt lại TẤT CẢ điểm danh về "chưa vote"\n` +
+      `• Tạo buổi thu quỹ mới (xoá danh sách đã đóng tuần trước)\n\n` +
+      `Lịch sử trận đấu & bảng xếp hạng KHÔNG bị ảnh hưởng.\n\nBạn có chắc chắn?`
+    )) return;
+
+    Store.startNewWeek(dateStr);
+    App.showToast('✅ Đã bắt đầu tuần mới! Điểm danh & quỹ đã reset.', 'success');
+    App.refreshCurrentPage();
   }
 
   editNextMatch() {

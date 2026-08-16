@@ -77,9 +77,6 @@ class TeamPageController {
             <button class="btn btn-secondary btn-sm" onclick="TeamPage.toggleManualEdit()">
               ${this.manualEditMode ? '✅ Xong' : '✏️ Sửa'}
             </button>
-            <button class="btn btn-outline btn-sm" onclick="TeamPage.resetAllAttendance()">
-              🔄 Reset điểm danh
-            </button>
           </div>
         ` : ''}
       </div>
@@ -205,6 +202,8 @@ class TeamPageController {
 
   renderHistoryView(matches, isAdmin) {
     const matchDay = Store.getMatchDay();
+    const skippedWeeks = Store.getSkippedWeeks();
+    const currentSkip = skippedWeeks.find(s => s.date === matchDay.date);
 
     // Group matches by their session date, newest date first.
     const groups = {};
@@ -214,6 +213,9 @@ class TeamPageController {
       groups[key].push(m);
     });
     const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+    // Weeks that were skipped but have no matches at all still deserve a row.
+    skippedWeeks.forEach(s => { if (!groups[s.date]) groups[s.date] = []; });
+    const allDates = [...new Set([...sortedDates, ...skippedWeeks.map(s => s.date)])].sort((a, b) => b.localeCompare(a));
 
     return `
       <div style="display:flex; flex-direction:column; gap:14px;">
@@ -223,11 +225,17 @@ class TeamPageController {
             <div>
               <span class="section-badge">BUỔI ĐÁ HIỆN TẠI</span>
               <h3 style="font-size:1.05rem; font-weight:800; margin-top:4px;">${TeamPage.formatDate(matchDay.date)}</h3>
+              <p style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Đổi ngày này ở nút "🔄 Tuần Mới" trên Trang chủ</p>
             </div>
-            ${isAdmin ? `<button class="btn btn-outline btn-sm" onclick="TeamPage.startNewMatchDay()">🔄 Chủ Nhật mới</button>` : ''}
+            ${isAdmin ? `<button class="btn btn-outline btn-sm" onclick="TeamPage.sendWeeklyReportNow()">📤 Gửi Telegram</button>` : ''}
           </div>
 
-          ${isAdmin ? `
+          ${currentSkip ? `
+            <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:10px 12px; font-size:0.82rem;">
+              🌧 <strong>Tuần này nghỉ:</strong> ${currentSkip.reason}
+              ${isAdmin ? `<button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="TeamPage.unmarkWeekSkipped()">Huỷ đánh dấu nghỉ</button>` : ''}
+            </div>
+          ` : isAdmin ? `
             <div style="display:flex; gap:8px; align-items:center;">
               <select id="new-match-home" class="form-select" style="flex:1;">
                 <option value="1">Đội 1 (Đỏ)</option>
@@ -242,23 +250,37 @@ class TeamPageController {
               </select>
               <button class="btn btn-primary btn-sm" onclick="TeamPage.addMatch()">➕ Thêm trận</button>
             </div>
+            <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="TeamPage.markWeekSkipped()">🌧 Đánh dấu tuần này nghỉ</button>
           ` : ''}
         </div>
 
-        ${sortedDates.length === 0 ? `
+        ${allDates.length === 0 ? `
           <div class="card" style="text-align:center; color:var(--text-muted); padding:20px;">
             Chưa có trận nào được ghi nhận. Bấm "➕ Thêm trận" ở trên để bắt đầu.
           </div>
-        ` : sortedDates.map(dateKey => `
+        ` : allDates.map(dateKey => {
+          const skip = skippedWeeks.find(s => s.date === dateKey);
+          const dayMatches = groups[dateKey] || [];
+          return `
           <div>
-            <div style="font-size:0.78rem; font-weight:800; color:var(--text-muted); margin-bottom:8px; padding-left:2px;">
-              📅 ${TeamPage.formatDate(dateKey)} ${dateKey === matchDay.date ? '(hiện tại)' : ''}
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <div style="font-size:0.78rem; font-weight:800; color:var(--text-muted); padding-left:2px;">
+                📅 ${TeamPage.formatDate(dateKey)} ${dateKey === matchDay.date ? '(hiện tại)' : ''}
+              </div>
+              ${isAdmin && dayMatches.length > 0 ? `<button class="btn btn-danger btn-sm" onclick="TeamPage.deleteWeekData('${dateKey}')">🗑️ Xoá dữ liệu tuần này</button>` : ''}
             </div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              ${groups[dateKey].map(m => this.renderMatchCard(m, isAdmin)).join('')}
-            </div>
+            ${skip && (groups[dateKey] || []).length === 0 ? `
+              <div class="card" style="margin-bottom:0; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25);">
+                🌧 Nghỉ: ${skip.reason}
+              </div>
+            ` : `
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                ${(groups[dateKey] || []).map(m => this.renderMatchCard(m, isAdmin)).join('')}
+              </div>
+            `}
           </div>
-        `).join('')}
+        `;
+        }).join('')}
       </div>
     `;
   }
@@ -309,15 +331,6 @@ class TeamPageController {
     return `${d}/${m}/${y}`;
   }
 
-  startNewMatchDay() {
-    const today = App.todayLocalISO();
-    const input = prompt('Nhập ngày Chủ Nhật mới (YYYY-MM-DD):', today);
-    if (!input) return;
-    Store.startNewMatchDay(input.trim());
-    App.showToast('Đã bắt đầu buổi đá mới!', 'success');
-    this.render();
-  }
-
   addMatch() {
     const home = document.getElementById('new-match-home').value;
     const away = document.getElementById('new-match-away').value;
@@ -327,6 +340,39 @@ class TeamPageController {
     }
     Store.addMatch(home, away);
     App.showToast('Đã thêm trận đấu mới, bấm "Nhập tỷ số" khi có kết quả!', 'success');
+    this.render();
+  }
+
+  sendWeeklyReportNow() {
+    if (!window.TelegramNotify || !TelegramNotify.isConfigured()) {
+      App.showToast('Telegram chưa được cấu hình!', 'error');
+      return;
+    }
+    const matchDay = Store.getMatchDay();
+    TelegramNotify.sendWeeklyReport(matchDay.date, Store.data);
+    App.showToast('Đã gửi báo cáo tuần này qua Telegram! 📤', 'success');
+  }
+
+  deleteWeekData(dateStr) {
+    if (!confirm(`Xoá TOÀN BỘ trận đấu của tuần ${this.formatDate(dateStr)}? Không thể hoàn tác.`)) return;
+    Store.deleteMatchesForDate(dateStr);
+    App.showToast('Đã xoá dữ liệu tuần đó.', 'info');
+    this.render();
+  }
+
+  markWeekSkipped() {
+    const reason = prompt('Lý do tuần này nghỉ (VD: Mưa lớn, Nghỉ lễ...):');
+    if (!reason || !reason.trim()) return;
+    const matchDay = Store.getMatchDay();
+    Store.markWeekSkipped(matchDay.date, reason.trim());
+    App.showToast('Đã đánh dấu tuần này nghỉ!', 'info');
+    this.render();
+  }
+
+  unmarkWeekSkipped() {
+    const matchDay = Store.getMatchDay();
+    Store.unmarkWeekSkipped(matchDay.date);
+    App.showToast('Đã huỷ đánh dấu nghỉ.', 'info');
     this.render();
   }
 
@@ -341,13 +387,6 @@ class TeamPageController {
     Store.autoBalanceTeams();
     App.showToast('Đã chia đội tự động cân bằng theo chỉ số OVR! ⚡', 'success');
     this.render();
-  }
-
-  resetAllAttendance() {
-    if (!confirm('Đặt lại điểm danh của TẤT CẢ mọi người về "chưa vote"? Ai cũng sẽ cần vote lại từ đầu cho tuần mới.')) return;
-    Store.resetAllAttendance();
-    App.showToast('Đã đặt lại điểm danh toàn đội về "chưa vote"!', 'success');
-    App.refreshCurrentPage();
   }
 
   changePlayerTeam(playerId, targetTeamId) {

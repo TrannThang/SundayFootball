@@ -164,6 +164,10 @@ class DataStore {
       p.attendance = p.attendance || 'pending';
     });
 
+    parsed.skippedWeeks = parsed.skippedWeeks || [];
+    parsed.period = parsed.period || { weekCount: 0, matchDates: [] };
+    parsed.period.matchDates = parsed.period.matchDates || [];
+
     return parsed;
   }
 
@@ -175,7 +179,9 @@ class DataStore {
       matchDay: DEFAULT_MATCHDAY,
       fund: DEFAULT_FUND,
       notice: DEFAULT_NOTICE,
-      nextMatch: DEFAULT_NEXT_MATCH
+      nextMatch: DEFAULT_NEXT_MATCH,
+      skippedWeeks: [],
+      period: { weekCount: 0, matchDates: [] }
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     this.data = initial;
@@ -233,6 +239,55 @@ class DataStore {
     this.save();
   }
 
+  // Single "new week" action that used to be 4 disconnected buttons across 3
+  // pages (next-match date, match-day tag, attendance reset, fund session
+  // reset) - admin sets one date and everything for the new week is prepped.
+  startNewWeek(dateStr) {
+    // Send the outgoing week's recap while its matches/attendance/fund state
+    // still reflect that week, before any of it gets reset below.
+    const oldMatchDayDate = this.data.matchDay.date;
+    if (window.TelegramNotify) TelegramNotify.sendWeeklyReport(oldMatchDayDate, this.data);
+
+    // Log whatever was collected this week into transaction history before
+    // wiping the paid list, so the money isn't lost from the record.
+    const oldSession = this.data.fund.matchSession;
+    const oldCollected = oldSession.paidIds.reduce((sum, id) => sum + this.getPlayerMatchFee(id), 0);
+    if (oldCollected > 0) {
+      this.addFundTransaction({
+        type: 'income',
+        desc: `Thu tiền trận ${oldSession.date} - ${oldSession.paidIds.length} người`,
+        amount: oldCollected,
+        date: oldSession.date
+      });
+    }
+
+    this.data.nextMatch.date = dateStr;
+    this.data.nextMatch.targetDate = `${dateStr}T18:00:00`;
+    this.data.matchDay = { date: dateStr };
+    this.data.players.forEach(p => {
+      p.attendance = 'pending';
+      p.votedAt = null;
+      p.votedBy = null;
+    });
+    this.data.fund.matchSession = { fee: oldSession.fee, date: dateStr, paidIds: [], customFees: {} };
+
+    // "1 tháng" = 4 buổi đá thực tế, không tính theo lịch (vì có tuần nghỉ mưa).
+    // Đủ 4 buổi thì chốt sổ: gửi tổng kết chu kỳ qua Telegram rồi xoá dữ liệu
+    // trận đấu của 4 buổi đó để Vua Phá Lưới & Lịch Sử trên web tính lại từ đầu.
+    if (!this.data.period) this.data.period = { weekCount: 0, matchDates: [] };
+    this.data.period.matchDates.push(oldMatchDayDate);
+    this.data.period.weekCount++;
+
+    if (this.data.period.weekCount >= 4) {
+      const cycleDates = this.data.period.matchDates;
+      if (window.TelegramNotify) TelegramNotify.sendCycleArchive(cycleDates, this.data);
+      this.data.matches = this.data.matches.filter(m => !cycleDates.includes(m.matchDate));
+      this.data.period = { weekCount: 0, matchDates: [] };
+    }
+
+    this.save();
+  }
+
   savePlayer(playerObj) {
     if (playerObj.id) {
       const index = this.data.players.findIndex(p => p.id === playerObj.id);
@@ -259,8 +314,32 @@ class DataStore {
     return this.data.matchDay || DEFAULT_MATCHDAY;
   }
 
-  startNewMatchDay(dateStr) {
-    this.data.matchDay = { date: dateStr };
+  getSkippedWeeks() {
+    return this.data.skippedWeeks || [];
+  }
+
+  // Records that a given week's session didn't happen (rain, holiday, etc.),
+  // so monthly archive reports can explain gaps instead of just showing 0 matches.
+  markWeekSkipped(dateStr, reason) {
+    if (!this.data.skippedWeeks) this.data.skippedWeeks = [];
+    this.data.skippedWeeks = this.data.skippedWeeks.filter(s => s.date !== dateStr);
+    this.data.skippedWeeks.push({ date: dateStr, reason });
+    this.save();
+  }
+
+  unmarkWeekSkipped(dateStr) {
+    this.data.skippedWeeks = (this.data.skippedWeeks || []).filter(s => s.date !== dateStr);
+    this.save();
+  }
+
+  getPeriod() {
+    return this.data.period || { weekCount: 0, matchDates: [] };
+  }
+
+  // Deletes every match tagged with dateStr in one shot (admin correction tool,
+  // separate from the per-match 🗑️ delete).
+  deleteMatchesForDate(dateStr) {
+    this.data.matches = this.data.matches.filter(m => m.matchDate !== dateStr);
     this.save();
   }
 

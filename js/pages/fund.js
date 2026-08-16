@@ -61,8 +61,8 @@ class FundPageController {
           </div>
           <div style="display:flex; gap:8px; margin-top:8px;">
             <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="FundPage.saveSessionInfo()">💾 Cập nhật phí/ngày</button>
-            <button class="btn btn-outline btn-sm" style="flex:1;" onclick="FundPage.startNewSession()">🔄 Buổi đá mới</button>
           </div>
+          <p style="font-size:0.72rem; color:var(--text-muted); margin-top:6px;">Muốn tạo buổi thu mới (xoá danh sách đã đóng)? Dùng nút "🔄 Tuần Mới" trên Trang chủ.</p>
         ` : ''}
       </div>
 
@@ -220,43 +220,6 @@ class FundPageController {
     const date = document.getElementById('session-date-input').value;
     Store.updateMatchSessionInfo(fee, date);
     App.showToast('Đã cập nhật phí & ngày trận đấu!', 'success');
-    this.render();
-  }
-
-  startNewSession() {
-    const fund = Store.getFund();
-    const oldPaidCount = fund.matchSession.paidIds.length;
-    const oldCollected = this.getSessionCollected();
-    const oldDate = this.formatDate(fund.matchSession.date);
-
-    let confirmMsg = `🔄 BẮT ĐẦU BUỔI THU TIỀN MỚI\n\n`;
-    if (oldPaidCount > 0) {
-      confirmMsg += `Buổi cũ (${oldDate}):\n`;
-      confirmMsg += `• Đã thu: ${oldPaidCount} người = ${new Intl.NumberFormat('vi-VN').format(oldCollected)}đ\n`;
-      confirmMsg += `• Số tiền này sẽ được ghi vào lịch sử giao dịch tự động.\n\n`;
-    }
-    confirmMsg += `⚠️ Danh sách đã đóng tiền sẽ được XÓA TRẮNG để bắt đầu buổi mới.\n\nBạn có chắc chắn muốn tiếp tục?`;
-
-    if (!confirm(confirmMsg)) return;
-
-    // Auto-log old session income into transaction history if there were payments
-    if (oldCollected > 0) {
-      Store.addFundTransaction({
-        type: 'income',
-        desc: `Thu tiền trận ${oldDate} - ${oldPaidCount} người`,
-        amount: oldCollected,
-        date: fund.matchSession.date
-      });
-    }
-
-    const feeInput = document.getElementById('session-fee-input');
-    const dateInput = document.getElementById('session-date-input');
-    const fee = feeInput && feeInput.value ? feeInput.value : fund.matchSession.fee;
-    // Use whatever date the admin picked in the field (falls back to local
-    // today only if they left it blank) - it must NOT be silently overridden.
-    const newDate = dateInput && dateInput.value ? dateInput.value : App.todayLocalISO();
-    Store.startNewMatchSession(fee || 500000, newDate);
-    App.showToast('✅ Đã tạo buổi thu tiền mới! Danh sách đã reset.', 'success');
     this.render();
   }
 
