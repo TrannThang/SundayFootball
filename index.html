@@ -15,11 +15,12 @@
   <link rel="stylesheet" href="css/responsive.css">
 
   <!-- Applies the saved light/dark theme before first paint, so the page
-       never flashes the wrong theme for a frame. -->
+       never flashes the wrong theme for a frame. Default is light for
+       everyone - only an explicit "dark" choice switches it off. -->
   <script>
     (function () {
       try {
-        if (localStorage.getItem('sf_theme') === 'light') {
+        if (localStorage.getItem('sf_theme') !== 'dark') {
           document.documentElement.setAttribute('data-theme', 'light');
         }
       } catch (e) {}
@@ -344,23 +345,23 @@
   <!-- Firebase (Realtime cross-device sync) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=2.3"></script>
+  <script src="js/firebase-config.js?v=2.4"></script>
 
   <!-- Telegram (optional vote notifications) -->
-  <script src="js/telegram-config.js?v=2.3"></script>
-  <script src="js/telegram-notify.js?v=2.3"></script>
+  <script src="js/telegram-config.js?v=2.4"></script>
+  <script src="js/telegram-notify.js?v=2.4"></script>
 
   <!-- JavaScript Modules -->
-  <script src="js/theme.js?v=2.3"></script>
-  <script src="js/cloud-sync.js?v=2.3"></script>
-  <script src="js/storage.js?v=2.3"></script>
-  <script src="js/auth.js?v=2.3"></script>
-  <script src="js/app.js?v=2.3"></script>
-  <script src="js/pages/home.js?v=2.3"></script>
-  <script src="js/pages/team.js?v=2.3"></script>
-  <script src="js/pages/squad.js?v=2.3"></script>
-  <script src="js/pages/fund.js?v=2.3"></script>
-  <script src="js/pages/ranking.js?v=2.3"></script>
-  <script src="js/pages/player-detail.js?v=2.3"></script>
+  <script src="js/theme.js?v=2.4"></script>
+  <script src="js/cloud-sync.js?v=2.4"></script>
+  <script src="js/storage.js?v=2.4"></script>
+  <script src="js/auth.js?v=2.4"></script>
+  <script src="js/app.js?v=2.4"></script>
+  <script src="js/pages/home.js?v=2.4"></script>
+  <script src="js/pages/team.js?v=2.4"></script>
+  <script src="js/pages/squad.js?v=2.4"></script>
+  <script src="js/pages/fund.js?v=2.4"></script>
+  <script src="js/pages/ranking.js?v=2.4"></script>
+  <script src="js/pages/player-detail.js?v=2.4"></script>
 </body>
 </html>
