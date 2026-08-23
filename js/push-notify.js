@@ -66,32 +66,66 @@ class PushNotifyEngine {
     }
   }
 
-  // Admin-only: fires the "lineup ready" push via the serverless function
-  // (it needs the service account credential, which only lives server-side).
-  async notifyLineupReady() {
+  // Admin picks exactly who gets the "lineup ready" push at send time -
+  // either everyone currently 'going', or a hand-picked list. No persistent
+  // per-player setting involved; it's decided fresh every time this opens.
+  openNotifyModal() {
     if (!Auth.isAdmin()) return;
+    const list = document.getElementById('notify-modal-list');
+    if (!list) return;
+    const players = Store.getPlayers();
+    list.innerHTML = players.map(p => `
+      <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; background:rgba(var(--bg-dark-rgb), 0.6); border-radius:8px; cursor:pointer;">
+        <input type="checkbox" class="notify-recipient-check" value="${p.id}" ${p.attendance === 'going' ? 'checked' : ''}>
+        <span style="flex:1; font-size:0.85rem; font-weight:600;">${p.name}</span>
+        <span style="font-size:0.72rem; color:var(--text-muted);">${p.attendance === 'going' ? '✅ Đi' : p.attendance === 'absent' ? '❌ Vắng' : '⏳ Chưa vote'}</span>
+      </label>
+    `).join('');
+    App.openModal('notify-modal');
+  }
+
+  selectAllGoing() {
+    document.querySelectorAll('.notify-recipient-check').forEach(cb => {
+      const player = Store.getPlayerById(cb.value);
+      cb.checked = !!(player && player.attendance === 'going');
+    });
+  }
+
+  selectNone() {
+    document.querySelectorAll('.notify-recipient-check').forEach(cb => { cb.checked = false; });
+  }
+
+  async sendToSelected() {
+    if (!Auth.isAdmin()) return;
+    const playerIds = [...document.querySelectorAll('.notify-recipient-check:checked')].map(cb => cb.value);
+    if (playerIds.length === 0) {
+      App.showToast('Chọn ít nhất 1 người để gửi.', 'error');
+      return;
+    }
     try {
       const res = await fetch('/api/send-push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           adminPin: Auth.ADMIN_PIN,
+          playerIds,
           title: '⚽ Đội hình đã sẵn sàng!',
           body: 'Admin vừa chia xong đội hình - vào xem ngay!'
         })
       });
       const data = await res.json();
+      App.closeModal('notify-modal');
       if (data.ok) {
         if (data.sent > 0) {
           App.showToast(`Đã gửi thông báo tới ${data.sent} thiết bị! 📣`, 'success');
         } else {
-          App.showToast(data.note || 'Không có ai để gửi thông báo.', 'info');
+          App.showToast(data.note || 'Không ai trong danh sách đã bật thông báo trên máy.', 'info');
         }
       } else {
         App.showToast(data.error || 'Gửi thông báo thất bại.', 'error');
       }
     } catch (e) {
-      console.error('notifyLineupReady failed', e);
+      console.error('sendToSelected failed', e);
       App.showToast('Không gửi được thông báo (server chưa sẵn sàng hoặc offline).', 'error');
     }
   }

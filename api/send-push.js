@@ -12,10 +12,11 @@
        cryptographically strong - matches this app's existing PIN-based
        trust model, nothing more sensitive than a push message is at stake.
 
-   Recipients are filtered to players who are BOTH marked 'going' for the
-   current match day AND explicitly notify-enabled by the admin (see
-   Store.setNotifyEnabled / HomePage.adminSetNotify) - registering a device
-   token isn't enough on its own, the admin controls who's actually on the list.
+   The admin picks recipients at send time (see js/push-notify.js
+   openNotifyModal - defaults to everyone 'going', freely editable) and this
+   just resolves those player ids to device tokens and sends. Registering a
+   device token isn't enough on its own to receive anything - the admin has
+   to have actually picked that person in the modal.
    ========================================================================== */
 
 const admin = require('firebase-admin');
@@ -50,7 +51,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const { adminPin, title, body } = req.body || {};
+  const { adminPin, title, body, playerIds } = req.body || {};
 
   if (!process.env.ADMIN_PIN || !process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
     res.status(500).json({ ok: false, error: 'Server chưa cấu hình biến môi trường push notification.' });
@@ -64,21 +65,17 @@ module.exports = async (req, res) => {
     res.status(400).json({ ok: false, error: 'Thiếu title/body.' });
     return;
   }
+  if (!Array.isArray(playerIds) || playerIds.length === 0) {
+    res.status(400).json({ ok: false, error: 'Chưa chọn người nhận.' });
+    return;
+  }
 
   try {
     getAdminApp();
-    const [playersSnap, tokensSnap, notifySnap] = await Promise.all([
-      admin.database().ref(`${DATA_ROOT}/players`).once('value'),
-      admin.database().ref(`${DATA_ROOT}/pushTokens`).once('value'),
-      admin.database().ref(`${DATA_ROOT}/notifyEnabled`).once('value'),
-    ]);
-    const players = playersSnap.val() || [];
+    const tokensSnap = await admin.database().ref(`${DATA_ROOT}/pushTokens`).once('value');
     const tokenMap = coerceKeyedObject(tokensSnap.val());
-    const notifyMap = coerceKeyedObject(notifySnap.val());
 
-    const eligiblePlayerIds = players
-      .filter((p) => p && p.attendance === 'going' && notifyMap[String(p.id)] === true)
-      .map((p) => String(p.id));
+    const eligiblePlayerIds = playerIds.map(String);
 
     const getTokenList = (id) => {
       const v = tokenMap[id];
@@ -88,7 +85,7 @@ module.exports = async (req, res) => {
     const tokens = eligiblePlayerIds.flatMap(getTokenList).filter(Boolean);
 
     if (tokens.length === 0) {
-      res.status(200).json({ ok: true, sent: 0, note: 'Không có ai vừa vote Đi vừa được bật thông báo.' });
+      res.status(200).json({ ok: true, sent: 0, note: 'Không ai trong danh sách đã bật thông báo trên máy.' });
       return;
     }
 
