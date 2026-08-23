@@ -86,7 +86,7 @@ class RankingPageController {
       .map(p => ({ ...p, matchGoals: goalsByName[p.name.toLowerCase()] || 0 }))
       .filter(p => p.matchGoals > 0)
       .sort((a, b) => b.matchGoals - a.matchGoals)
-      .slice(0, 10);
+      .slice(0, 15);
   }
 }
 
