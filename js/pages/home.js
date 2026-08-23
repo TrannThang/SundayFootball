@@ -57,7 +57,7 @@ class HomePageController {
           </div>
           ${Auth.isAdmin() ? `<button class="btn btn-outline btn-sm" onclick="HomePage.editNotice()">✏️ Sửa</button>` : ''}
         </div>
-        <div style="background:rgba(9,13,22,0.6); padding:12px 14px; border-radius:var(--radius-sm); border-left:3px solid var(--accent-cyan); font-size:0.88rem; line-height:1.6;" id="notice-text-content">
+        <div style="background:rgba(var(--bg-dark-rgb), 0.6); padding:12px 14px; border-radius:var(--radius-sm); border-left:3px solid var(--accent-cyan); font-size:0.88rem; line-height:1.6;" id="notice-text-content">
           ${noticeText}
         </div>
       </div>

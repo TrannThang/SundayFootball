@@ -45,7 +45,7 @@ class FundPageController {
           </button>
         </div>
 
-        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.85rem; background:rgba(9,13,22,0.5); padding:10px 14px; border-radius:8px;">
+        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.85rem; background:rgba(var(--bg-dark-rgb), 0.5); padding:10px 14px; border-radius:8px;">
           <div>Phí mặc định: <strong style="color:var(--accent-gold);">${formatVnd(fundData.matchSession.fee)}/người</strong></div>
           <div>Đã đóng: <strong style="color:var(--accent-emerald);">${fundData.matchSession.paidIds.length}/${Store.getPlayers().length}</strong></div>
         </div>
@@ -128,7 +128,7 @@ class FundPageController {
     return filtered.map(t => {
       const isInc = t.type === 'income';
       return `
-        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:10px 14px; border-radius:8px; border-left:3px solid ${isInc ? 'var(--accent-emerald)' : 'var(--accent-rose)'}">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:10px 14px; border-radius:8px; border-left:3px solid ${isInc ? 'var(--accent-emerald)' : 'var(--accent-rose)'}">
           <div>
             <div style="font-weight:700; font-size:0.88rem;">${t.desc}</div>
             <div style="font-size:0.72rem; color:var(--text-muted);">${t.date}</div>
@@ -165,7 +165,7 @@ class FundPageController {
           const isPaid = paidIds.includes(p.id);
           const fee = Store.getPlayerMatchFee(p.id);
           return `
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(var(--bg-dark-rgb), 0.6); padding:8px 12px; border-radius:8px;">
               <span style="font-weight:700; font-size:0.85rem; flex:1;">${p.name} (${p.pos})</span>
               ${isAdmin ? `
                 <input type="number" class="form-input" value="${fee}" step="10000" style="width:90px; padding:4px 8px; font-size:0.78rem;" onchange="FundPage.setPlayerFee(${p.id}, this.value)">

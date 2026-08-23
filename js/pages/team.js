@@ -118,7 +118,7 @@ class TeamPageController {
     return `
       <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
         ${players.map(p => `
-          <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:6px 12px; border-radius:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:6px 12px; border-radius:8px;">
             <span style="font-weight:700; font-size:0.85rem;">${p.name} (${p.pos})</span>
             ${this.renderVoteTimeLabel(p)}
           </div>
@@ -139,7 +139,7 @@ class TeamPageController {
     return `
       <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
         ${players.map(p => `
-          <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:8px 12px; border-radius:8px;">
             <div>
               <span style="font-weight:700; font-size:0.88rem;">${p.name} (${p.pos})</span><br>
               ${this.renderVoteTimeLabel(p)}
@@ -173,7 +173,7 @@ class TeamPageController {
 
         <div style="display:flex; flex-direction:column; gap:6px;">
           ${teamList.map(p => `
-            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
+            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
               <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
                 <span class="pos-badge pos-${p.pos}">${p.pos}</span>
                 <span style="font-weight:700; font-size:0.9rem; ${p.attendance === 'absent' ? 'text-decoration:line-through; opacity:0.5;' : p.attendance === 'pending' ? 'opacity:0.6;' : ''}">${p.name}</span>
@@ -306,7 +306,7 @@ class TeamPageController {
           ` : ''}
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.7); padding:14px; border-radius:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.7); padding:14px; border-radius:10px;">
           <div style="flex:1; text-align:center; font-weight:800; font-size:0.95rem;">
             ${teamNames[m.homeTeam]}
           </div>

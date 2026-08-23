@@ -27,7 +27,7 @@ class RankingPageController {
 
         <div style="display:flex; flex-direction:column; gap:6px;">
           ${topScorers.length > 0 ? topScorers.map((p, idx) => `
-            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(9,13,22,0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
+            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="font-weight:900; font-size:0.85rem; color:var(--accent-gold); width:18px;">#${idx + 1}</span>
                 <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
@@ -50,7 +50,7 @@ class RankingPageController {
           ${matches.filter(m => m.status === 'finished').length === 0 ? `
             <div style="text-align:center; color:var(--text-muted); padding:16px;">Chưa có trận nào được ghi nhận</div>
           ` : matches.filter(m => m.status === 'finished').map((m, idx) => `
-            <div style="background:rgba(9,13,22,0.6); padding:10px 14px; border-radius:8px; border:1px solid var(--border-color);">
+            <div style="background:rgba(var(--bg-dark-rgb), 0.6); padding:10px 14px; border-radius:8px; border:1px solid var(--border-color);">
               <div style="display:flex; justify-content:space-between; font-size:0.88rem; font-weight:800;">
                 <span>Trận ${idx + 1}: Đội ${m.homeTeam} vs Đội ${m.awayTeam}</span>
                 <span style="color:var(--accent-cyan);">${m.homeScore} - ${m.awayScore}</span>

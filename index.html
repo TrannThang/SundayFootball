@@ -13,6 +13,18 @@
   <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- Applies the saved light/dark theme before first paint, so the page
+       never flashes the wrong theme for a frame. -->
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('sf_theme') === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
 
@@ -35,11 +47,16 @@
         </div>
       </div>
       
-      <!-- User / PIN Login Badge -->
-      <button id="user-status-btn" class="user-status-btn" onclick="Auth.handleUserHeaderClick()">
-        <div class="user-avatar-mini" id="header-avatar">?</div>
-        <span id="header-username">Đăng nhập</span>
-      </button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <!-- Light/Dark Theme Toggle -->
+        <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="Theme.toggle()" title="Đổi giao diện sáng/tối">🌙</button>
+
+        <!-- User / PIN Login Badge -->
+        <button id="user-status-btn" class="user-status-btn" onclick="Auth.handleUserHeaderClick()">
+          <div class="user-avatar-mini" id="header-avatar">?</div>
+          <span id="header-username">Đăng nhập</span>
+        </button>
+      </div>
     </header>
 
     <!-- Toast Notification Overlay -->
@@ -327,22 +344,23 @@
   <!-- Firebase (Realtime cross-device sync) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=2.2"></script>
+  <script src="js/firebase-config.js?v=2.3"></script>
 
   <!-- Telegram (optional vote notifications) -->
-  <script src="js/telegram-config.js?v=2.2"></script>
-  <script src="js/telegram-notify.js?v=2.2"></script>
+  <script src="js/telegram-config.js?v=2.3"></script>
+  <script src="js/telegram-notify.js?v=2.3"></script>
 
   <!-- JavaScript Modules -->
-  <script src="js/cloud-sync.js?v=2.2"></script>
-  <script src="js/storage.js?v=2.2"></script>
-  <script src="js/auth.js?v=2.2"></script>
-  <script src="js/app.js?v=2.2"></script>
-  <script src="js/pages/home.js?v=2.2"></script>
-  <script src="js/pages/team.js?v=2.2"></script>
-  <script src="js/pages/squad.js?v=2.2"></script>
-  <script src="js/pages/fund.js?v=2.2"></script>
-  <script src="js/pages/ranking.js?v=2.2"></script>
-  <script src="js/pages/player-detail.js?v=2.2"></script>
+  <script src="js/theme.js?v=2.3"></script>
+  <script src="js/cloud-sync.js?v=2.3"></script>
+  <script src="js/storage.js?v=2.3"></script>
+  <script src="js/auth.js?v=2.3"></script>
+  <script src="js/app.js?v=2.3"></script>
+  <script src="js/pages/home.js?v=2.3"></script>
+  <script src="js/pages/team.js?v=2.3"></script>
+  <script src="js/pages/squad.js?v=2.3"></script>
+  <script src="js/pages/fund.js?v=2.3"></script>
+  <script src="js/pages/ranking.js?v=2.3"></script>
+  <script src="js/pages/player-detail.js?v=2.3"></script>
 </body>
 </html>
