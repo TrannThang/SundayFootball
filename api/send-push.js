@@ -11,6 +11,11 @@
        random requests can't spam the team with pushes. Not meant to be
        cryptographically strong - matches this app's existing PIN-based
        trust model, nothing more sensitive than a push message is at stake.
+
+   Recipients are filtered to players who are BOTH marked 'going' for the
+   current match day AND explicitly notify-enabled by the admin (see
+   Store.setNotifyEnabled / HomePage.adminSetNotify) - registering a device
+   token isn't enough on its own, the admin controls who's actually on the list.
    ========================================================================== */
 
 const admin = require('firebase-admin');
@@ -25,6 +30,18 @@ function getAdminApp() {
     credential: admin.credential.cert(serviceAccount),
     databaseURL: DATABASE_URL,
   });
+}
+
+// Firebase Realtime Database silently rewrites an object whose keys look like
+// dense array indices (e.g. {1:.., 2:..}) into a real array with holes - same
+// quirk DataStore.coerceKeyedObject() works around client-side in storage.js.
+function coerceKeyedObject(value) {
+  if (Array.isArray(value)) {
+    const obj = {};
+    value.forEach((v, idx) => { if (v !== null && v !== undefined) obj[idx] = v; });
+    return obj;
+  }
+  return value || {};
 }
 
 module.exports = async (req, res) => {
@@ -50,14 +67,28 @@ module.exports = async (req, res) => {
 
   try {
     getAdminApp();
-    const snap = await admin.database().ref(`${DATA_ROOT}/pushTokens`).once('value');
-    const tokenMap = snap.val() || {};
-    const tokens = Object.values(tokenMap)
-      .flatMap((v) => (Array.isArray(v) ? v : Object.values(v || {})))
-      .filter(Boolean);
+    const [playersSnap, tokensSnap, notifySnap] = await Promise.all([
+      admin.database().ref(`${DATA_ROOT}/players`).once('value'),
+      admin.database().ref(`${DATA_ROOT}/pushTokens`).once('value'),
+      admin.database().ref(`${DATA_ROOT}/notifyEnabled`).once('value'),
+    ]);
+    const players = playersSnap.val() || [];
+    const tokenMap = coerceKeyedObject(tokensSnap.val());
+    const notifyMap = coerceKeyedObject(notifySnap.val());
+
+    const eligiblePlayerIds = players
+      .filter((p) => p && p.attendance === 'going' && notifyMap[String(p.id)] === true)
+      .map((p) => String(p.id));
+
+    const getTokenList = (id) => {
+      const v = tokenMap[id];
+      return Array.isArray(v) ? v : Object.values(v || {});
+    };
+
+    const tokens = eligiblePlayerIds.flatMap(getTokenList).filter(Boolean);
 
     if (tokens.length === 0) {
-      res.status(200).json({ ok: true, sent: 0, note: 'Chưa có ai bật thông báo.' });
+      res.status(200).json({ ok: true, sent: 0, note: 'Không có ai vừa vote Đi vừa được bật thông báo.' });
       return;
     }
 
@@ -79,14 +110,13 @@ module.exports = async (req, res) => {
     });
     if (deadTokens.size > 0) {
       const updates = {};
-      Object.entries(tokenMap).forEach(([ownerId, arr]) => {
-        const list = Array.isArray(arr) ? arr : Object.values(arr || {});
-        updates[`${DATA_ROOT}/pushTokens/${ownerId}`] = list.filter((t) => !deadTokens.has(t));
+      eligiblePlayerIds.forEach((id) => {
+        updates[`${DATA_ROOT}/pushTokens/${id}`] = getTokenList(id).filter((t) => !deadTokens.has(t));
       });
       await admin.database().ref().update(updates);
     }
 
-    res.status(200).json({ ok: true, sent: response.successCount, failed: response.failureCount });
+    res.status(200).json({ ok: true, sent: response.successCount, failed: response.failureCount, targeted: eligiblePlayerIds.length });
   } catch (e) {
     console.error('send-push error', e);
     res.status(500).json({ ok: false, error: 'Lỗi gửi thông báo: ' + e.message });

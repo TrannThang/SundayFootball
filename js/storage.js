@@ -170,6 +170,7 @@ class DataStore {
     parsed.archivedGoals = DataStore.coerceKeyedObject(parsed.archivedGoals);
     parsed.authEpoch = parsed.authEpoch || 0;
     parsed.pushTokens = DataStore.coerceKeyedObject(parsed.pushTokens);
+    parsed.notifyEnabled = DataStore.coerceKeyedObject(parsed.notifyEnabled);
 
     return parsed;
   }
@@ -187,7 +188,8 @@ class DataStore {
       period: { weekCount: 0, matchDates: [] },
       archivedGoals: {},
       authEpoch: 0,
-      pushTokens: {}
+      pushTokens: {},
+      notifyEnabled: {}
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     this.data = initial;
@@ -411,6 +413,21 @@ class DataStore {
     this.data.pushTokens[key] = [...existing, token];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
     if (window.CloudSync) CloudSync.pushFieldUpdate(`pushTokens/${key}`, this.data.pushTokens[key]);
+  }
+
+  // Admin-controlled allow-list: a registered device token only actually
+  // receives pushes if the admin has also flipped this on for that player -
+  // self-registering a device is not enough by itself. Off by default.
+  isNotifyEnabled(playerId) {
+    return !!(this.data.notifyEnabled && this.data.notifyEnabled[String(playerId)]);
+  }
+
+  setNotifyEnabled(playerId, enabled) {
+    if (!this.data.notifyEnabled) this.data.notifyEnabled = {};
+    const key = String(playerId);
+    this.data.notifyEnabled[key] = !!enabled;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    if (window.CloudSync) CloudSync.pushFieldUpdate(`notifyEnabled/${key}`, !!enabled);
   }
 
   // Deletes every match tagged with dateStr in one shot (admin correction tool,

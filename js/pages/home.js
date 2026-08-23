@@ -147,12 +147,18 @@ class HomePageController {
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <select id="admin-quick-player-select" class="form-select" style="flex:1; min-width:160px;">
               ${Store.getPlayers().map(p => `
-                <option value="${p.id}">${p.name} - ${p.attendance === 'going' ? '✅ Đã ĐI' : p.attendance === 'absent' ? '❌ VẮNG' : '⏳ Chưa vote'}</option>
+                <option value="${p.id}">${p.name} - ${p.attendance === 'going' ? '✅ Đã ĐI' : p.attendance === 'absent' ? '❌ VẮNG' : '⏳ Chưa vote'} ${Store.isNotifyEnabled(p.id) ? '🔔' : ''}</option>
               `).join('')}
             </select>
             <button class="btn btn-success btn-sm" onclick="HomePage.adminToggleAttendance('going')">ĐI</button>
             <button class="btn btn-danger btn-sm" onclick="HomePage.adminToggleAttendance('absent')">VẮNG</button>
             <button class="btn btn-secondary btn-sm" onclick="HomePage.adminToggleAttendance('pending')">Chưa vote</button>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px;">
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Thông báo cho người đang chọn ở trên:</span>
+            <button class="btn btn-outline btn-sm" onclick="HomePage.adminSetNotify(true)" style="padding:3px 8px; font-size:0.72rem;">🔔 Bật</button>
+            <button class="btn btn-outline btn-sm" onclick="HomePage.adminSetNotify(false)" style="padding:3px 8px; font-size:0.72rem;">🔕 Tắt</button>
           </div>
         </div>
       `;
@@ -238,6 +244,16 @@ class HomePageController {
       App.showToast(`Admin đã điểm danh cho ${player ? player.name : ''}: ${label}`, 'success');
       App.refreshCurrentPage();
     }
+  }
+
+  adminSetNotify(enabled) {
+    const select = document.getElementById('admin-quick-player-select');
+    if (!select) return;
+    const playerId = select.value;
+    const player = Store.getPlayerById(playerId);
+    Store.setNotifyEnabled(playerId, enabled);
+    App.showToast(`Đã ${enabled ? 'bật' : 'tắt'} thông báo cho ${player ? player.name : ''}`, 'success');
+    App.refreshCurrentPage();
   }
 
   startNewWeek() {

@@ -37,7 +37,8 @@ class PushNotifyEngine {
         return;
       }
 
-      const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const reg = await navigator.serviceWorker.ready; // wait for it to actually activate
       if (!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
       const messaging = firebase.messaging();
 
@@ -81,7 +82,11 @@ class PushNotifyEngine {
       });
       const data = await res.json();
       if (data.ok) {
-        App.showToast(`Đã gửi thông báo tới ${data.sent} thiết bị! 📣`, 'success');
+        if (data.sent > 0) {
+          App.showToast(`Đã gửi thông báo tới ${data.sent} thiết bị! 📣`, 'success');
+        } else {
+          App.showToast(data.note || 'Không có ai để gửi thông báo.', 'info');
+        }
       } else {
         App.showToast(data.error || 'Gửi thông báo thất bại.', 'error');
       }
