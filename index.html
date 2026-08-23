@@ -58,6 +58,12 @@
       </div>
       
       <div style="display:flex; align-items:center; gap:8px;">
+        <!-- Notification Inbox Bell -->
+        <button id="notify-bell-btn" class="theme-toggle-btn" onclick="NotifyInbox.open()" title="Thông báo" style="position:relative;">
+          🔔
+          <span id="notify-bell-badge" style="display:none; position:absolute; top:-3px; right:-3px; background:var(--accent-rose); color:white; font-size:0.6rem; font-weight:800; border-radius:50%; min-width:16px; height:16px; align-items:center; justify-content:center; padding:0 3px; line-height:1;"></span>
+        </button>
+
         <!-- Light/Dark Theme Toggle -->
         <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="Theme.toggle()" title="Đổi giao diện sáng/tối">🌙</button>
 
@@ -371,31 +377,47 @@
     </div>
   </div>
 
+  <!-- ===================================================================
+       MODAL 8: NOTIFICATION INBOX (per-person, opened via the bell icon)
+       =================================================================== -->
+  <div id="notify-inbox-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🔔 Thông Báo Của Bạn</h3>
+        <button class="modal-close-btn" onclick="App.closeModal('notify-inbox-modal')">&times;</button>
+      </div>
+      <div id="notify-inbox-list" style="max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+        <!-- Dynamic notification list -->
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase (Realtime cross-device sync + push notifications) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
-  <script src="js/firebase-config.js?v=2.7"></script>
+  <script src="js/firebase-config.js?v=2.8"></script>
 
   <!-- Telegram (optional vote notifications) -->
-  <script src="js/telegram-config.js?v=2.7"></script>
-  <script src="js/telegram-notify.js?v=2.7"></script>
+  <script src="js/telegram-config.js?v=2.8"></script>
+  <script src="js/telegram-notify.js?v=2.8"></script>
 
   <!-- Push Notifications (optional, needs js/push-config.js VAPID key) -->
-  <script src="js/push-config.js?v=2.7"></script>
-  <script src="js/push-notify.js?v=2.7"></script>
+  <script src="js/push-config.js?v=2.8"></script>
+  <script src="js/push-notify.js?v=2.8"></script>
+  <script src="js/notify-inbox.js?v=2.8"></script>
 
   <!-- JavaScript Modules -->
-  <script src="js/theme.js?v=2.7"></script>
-  <script src="js/cloud-sync.js?v=2.7"></script>
-  <script src="js/storage.js?v=2.7"></script>
-  <script src="js/auth.js?v=2.7"></script>
-  <script src="js/app.js?v=2.7"></script>
-  <script src="js/pages/home.js?v=2.7"></script>
-  <script src="js/pages/team.js?v=2.7"></script>
-  <script src="js/pages/squad.js?v=2.7"></script>
-  <script src="js/pages/fund.js?v=2.7"></script>
-  <script src="js/pages/ranking.js?v=2.7"></script>
-  <script src="js/pages/player-detail.js?v=2.7"></script>
+  <script src="js/theme.js?v=2.8"></script>
+  <script src="js/cloud-sync.js?v=2.8"></script>
+  <script src="js/storage.js?v=2.8"></script>
+  <script src="js/auth.js?v=2.8"></script>
+  <script src="js/app.js?v=2.8"></script>
+  <script src="js/pages/home.js?v=2.8"></script>
+  <script src="js/pages/team.js?v=2.8"></script>
+  <script src="js/pages/squad.js?v=2.8"></script>
+  <script src="js/pages/fund.js?v=2.8"></script>
+  <script src="js/pages/ranking.js?v=2.8"></script>
+  <script src="js/pages/player-detail.js?v=2.8"></script>
 </body>
 </html>

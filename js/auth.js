@@ -75,6 +75,8 @@ class AuthManager {
       if (avatarEl) avatarEl.textContent = '?';
       if (nameEl) nameEl.textContent = 'Đăng nhập';
     }
+
+    if (window.NotifyInbox) NotifyInbox.updateBadge();
   }
 
   handleUserHeaderClick() {

@@ -170,6 +170,8 @@ class DataStore {
     parsed.archivedGoals = DataStore.coerceKeyedObject(parsed.archivedGoals);
     parsed.authEpoch = parsed.authEpoch || 0;
     parsed.pushTokens = DataStore.coerceKeyedObject(parsed.pushTokens);
+    parsed.notifications = parsed.notifications || [];
+    parsed.notifyLastSeen = DataStore.coerceKeyedObject(parsed.notifyLastSeen);
 
     return parsed;
   }
@@ -187,7 +189,9 @@ class DataStore {
       period: { weekCount: 0, matchDates: [] },
       archivedGoals: {},
       authEpoch: 0,
-      pushTokens: {}
+      pushTokens: {},
+      notifications: [],
+      notifyLastSeen: {}
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     this.data = initial;
@@ -411,6 +415,45 @@ class DataStore {
     this.data.pushTokens[key] = [...existing, token];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
     if (window.CloudSync) CloudSync.pushFieldUpdate(`pushTokens/${key}`, this.data.pushTokens[key]);
+  }
+
+  // In-app notification inbox - separate from the OS push itself, so a
+  // message still shows up here (bell icon) even on a device that hasn't
+  // enabled push, or if the OS push silently failed to deliver.
+  addNotification({ title, body, recipientIds }) {
+    if (!this.data.notifications) this.data.notifications = [];
+    const note = {
+      id: Date.now(),
+      title,
+      body,
+      recipientIds: recipientIds.map(String),
+      createdAt: new Date().toISOString()
+    };
+    this.data.notifications = [note, ...this.data.notifications].slice(0, 100); // cap growth
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    if (window.CloudSync) CloudSync.pushFieldUpdate('notifications', this.data.notifications);
+  }
+
+  getNotificationsFor(ownerId) {
+    const key = String(ownerId);
+    return (this.data.notifications || [])
+      .filter(n => n.recipientIds && n.recipientIds.includes(key))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  markNotificationsSeen(ownerId) {
+    if (!this.data.notifyLastSeen) this.data.notifyLastSeen = {};
+    const key = String(ownerId);
+    this.data.notifyLastSeen[key] = new Date().toISOString();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    if (window.CloudSync) CloudSync.pushFieldUpdate(`notifyLastSeen/${key}`, this.data.notifyLastSeen[key]);
+  }
+
+  getUnreadNotificationCount(ownerId) {
+    const lastSeen = this.data.notifyLastSeen && this.data.notifyLastSeen[String(ownerId)];
+    const notes = this.getNotificationsFor(ownerId);
+    if (!lastSeen) return notes.length;
+    return notes.filter(n => n.createdAt > lastSeen).length;
   }
 
   // Deletes every match tagged with dateStr in one shot (admin correction tool,

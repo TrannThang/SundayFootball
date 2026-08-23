@@ -102,20 +102,21 @@ class PushNotifyEngine {
       App.showToast('Chọn ít nhất 1 người để gửi.', 'error');
       return;
     }
+    const title = '⚽ Đội hình đã sẵn sàng!';
+    const body = 'Admin vừa chia xong đội hình - vào xem ngay!';
     try {
       const res = await fetch('/api/send-push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          adminPin: Auth.ADMIN_PIN,
-          playerIds,
-          title: '⚽ Đội hình đã sẵn sàng!',
-          body: 'Admin vừa chia xong đội hình - vào xem ngay!'
-        })
+        body: JSON.stringify({ adminPin: Auth.ADMIN_PIN, playerIds, title, body })
       });
       const data = await res.json();
       App.closeModal('notify-modal');
       if (data.ok) {
+        // Logged in the in-app inbox regardless of whether an OS push actually
+        // went out - a recipient without push enabled should still see this
+        // next time they open the app.
+        Store.addNotification({ title, body, recipientIds: playerIds });
         if (data.sent > 0) {
           App.showToast(`Đã gửi thông báo tới ${data.sent} thiết bị! 📣`, 'success');
         } else {
