@@ -10,7 +10,7 @@ class PlayerDetailController {
     const container = document.getElementById('player-detail-content');
     if (!container) return;
 
-    const teamColors = { 1: '#ef4444', 2: '#3b82f6', 3: '#eab308' };
+    const teamColors = { 1: '#f97316', 2: '#22c55e', 3: '#94a3b8' };
     const teamNames = { 1: 'Đội 1', 2: 'Đội 2', 3: 'Đội 3' };
     const teamColor = teamColors[p.teamId] || '#06b6d4';
 

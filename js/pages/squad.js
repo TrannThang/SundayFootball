@@ -60,7 +60,7 @@ class SquadPageController {
   }
 
   renderFifaCard(p, isAdmin) {
-    const teamColors = { 1: '#ef4444', 2: '#3b82f6', 3: '#eab308' };
+    const teamColors = { 1: '#f97316', 2: '#22c55e', 3: '#94a3b8' };
     const teamNames = { 1: 'Đội 1', 2: 'Đội 2', 3: 'Đội 3' };
     const teamColor = teamColors[p.teamId] || '#06b6d4';
 
@@ -102,11 +102,20 @@ class SquadPageController {
     `;
   }
 
+  // Random 4-digit pin, not derived from id/name (those are guessable).
+  generateRandomPin() {
+    let pin;
+    do {
+      pin = String(Math.floor(1000 + Math.random() * 9000));
+    } while (Store.getPlayers().some(p => p.pin === pin));
+    return pin;
+  }
+
   openAddPlayerModal() {
     document.getElementById('player-modal-title').textContent = '🏃 Thêm Cầu Thủ Mới';
     document.getElementById('player-edit-id').value = '';
     document.getElementById('player-name').value = '';
-    document.getElementById('player-pin').value = String(1000 + Store.getPlayers().length + 1);
+    document.getElementById('player-pin').value = this.generateRandomPin();
     document.getElementById('player-pos').value = 'CM';
     document.getElementById('player-ovr').value = 70;
 

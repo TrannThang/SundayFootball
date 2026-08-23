@@ -77,15 +77,6 @@ class AuthManager {
     this.pinBuffer = '';
     const textInput = document.getElementById('pin-text-input');
     if (textInput) textInput.value = '';
-
-    // Populate quick member dropdown
-    const select = document.getElementById('quick-member-pin-select');
-    if (select) {
-      const players = Store.getPlayers();
-      select.innerHTML = `<option value="">-- Chọn tên thành viên --</option>` +
-        players.map(p => `<option value="${p.pin}">${p.id}. ${p.name} (PIN: ${p.pin})</option>`).join('');
-    }
-
     this.updatePinDisplay();
     App.openModal('pin-modal');
   }
@@ -114,15 +105,6 @@ class AuthManager {
     const display = document.getElementById('pin-display');
     if (display) {
       display.textContent = this.pinBuffer ? this.pinBuffer.padEnd(4, '•') : '____';
-    }
-  }
-
-  selectMemberPin(pin) {
-    if (pin) {
-      const textInput = document.getElementById('pin-text-input');
-      if (textInput) textInput.value = pin;
-      this.pinBuffer = pin;
-      this.submitPinWithVal(pin);
     }
   }
 
@@ -162,7 +144,7 @@ class AuthManager {
       this.closePinModal();
       App.refreshCurrentPage();
     } else {
-      App.showToast(`Mã PIN "${pin}" không đúng! Thử lại (VD: TT123, A001)`, 'error');
+      App.showToast(`Mã PIN "${pin}" không đúng!`, 'error');
       this.clearPin();
     }
   }
@@ -186,14 +168,6 @@ class AuthManager {
     return Store.getPlayerById(this.currentUser.id);
   }
 
-  resetAppStoreData() {
-    if (confirm("Bạn có muốn tải lại các thiết lập và dữ liệu từ file code JavaScript?")) {
-      Store.resetToDefault();
-      App.showToast("Đã cập nhật dữ liệu từ file Code!", "success");
-      this.closePinModal();
-      App.refreshCurrentPage();
-    }
-  }
 }
 
 window.Auth = new AuthManager();

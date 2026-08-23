@@ -83,14 +83,14 @@ class TeamPageController {
 
       <!-- 3 Teams Section -->
       <div style="display:flex; flex-direction:column; gap:14px;">
-        <!-- Team 1 Card (Red) -->
-        ${this.renderTeamCard(1, 'Đội 1 (Áo Đỏ 🟥)', team1, calcAvgOvr(team1), 'var(--team-1-red)', 'team-badge-1', isAdmin)}
+        <!-- Team 1 Card (Orange) -->
+        ${this.renderTeamCard(1, 'Đội 1 (Áo Cam 🟠)', team1, calcAvgOvr(team1), 'var(--team-1-color)', 'team-badge-1', isAdmin)}
 
-        <!-- Team 2 Card (Blue) -->
-        ${this.renderTeamCard(2, 'Đội 2 (Áo Xanh 🟦)', team2, calcAvgOvr(team2), 'var(--team-2-blue)', 'team-badge-2', isAdmin)}
+        <!-- Team 2 Card (Green) -->
+        ${this.renderTeamCard(2, 'Đội 2 (Áo Xanh Lá 🟢)', team2, calcAvgOvr(team2), 'var(--team-2-color)', 'team-badge-2', isAdmin)}
 
-        <!-- Team 3 Card (Yellow) -->
-        ${this.renderTeamCard(3, 'Đội 3 (Áo Vàng 🟨)', team3, calcAvgOvr(team3), 'var(--team-3-yellow)', 'team-badge-3', isAdmin)}
+        <!-- Team 3 Card (Plain/no bib) -->
+        ${this.renderTeamCard(3, 'Đội 3 (Áo Thường ⚪)', team3, calcAvgOvr(team3), 'var(--team-3-color)', 'team-badge-3', isAdmin)}
       </div>
 
       ${absentPlayers.length > 0 ? `
@@ -235,23 +235,27 @@ class TeamPageController {
               🌧 <strong>Tuần này nghỉ:</strong> ${currentSkip.reason}
               ${isAdmin ? `<button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="TeamPage.unmarkWeekSkipped()">Huỷ đánh dấu nghỉ</button>` : ''}
             </div>
-          ` : isAdmin ? `
+          ` : isAdmin ? (() => {
+            const predicted = this.predictNextTeams();
+            const teamLabels = { 1: 'Đội 1 (Cam)', 2: 'Đội 2 (Xanh Lá)', 3: 'Đội 3 (Thường)' };
+            return `
             <div style="display:flex; gap:8px; align-items:center;">
               <select id="new-match-home" class="form-select" style="flex:1;">
-                <option value="1">Đội 1 (Đỏ)</option>
-                <option value="2">Đội 2 (Xanh)</option>
-                <option value="3">Đội 3 (Vàng)</option>
+                <option value="1" ${predicted.home === 1 ? 'selected' : ''}>${teamLabels[1]}</option>
+                <option value="2" ${predicted.home === 2 ? 'selected' : ''}>${teamLabels[2]}</option>
+                <option value="3" ${predicted.home === 3 ? 'selected' : ''}>${teamLabels[3]}</option>
               </select>
               <span style="font-weight:800;">vs</span>
               <select id="new-match-away" class="form-select" style="flex:1;">
-                <option value="1">Đội 1 (Đỏ)</option>
-                <option value="2" selected>Đội 2 (Xanh)</option>
-                <option value="3">Đội 3 (Vàng)</option>
+                <option value="1" ${predicted.away === 1 ? 'selected' : ''}>${teamLabels[1]}</option>
+                <option value="2" ${predicted.away === 2 ? 'selected' : ''}>${teamLabels[2]}</option>
+                <option value="3" ${predicted.away === 3 ? 'selected' : ''}>${teamLabels[3]}</option>
               </select>
               <button class="btn btn-primary btn-sm" onclick="TeamPage.addMatch()">➕ Thêm trận</button>
             </div>
+            <p style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Đã tự điền đội theo luật thắng ở lại / hòa đội lâu hơn ra sân - bạn vẫn sửa được nếu cần.</p>
             <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="TeamPage.markWeekSkipped()">🌧 Đánh dấu tuần này nghỉ</button>
-          ` : ''}
+          `; })() : ''}
         </div>
 
         ${allDates.length === 0 ? `
@@ -286,7 +290,7 @@ class TeamPageController {
   }
 
   renderMatchCard(m, isAdmin) {
-    const teamNames = { 1: 'Đội 1 (Đỏ 🟥)', 2: 'Đội 2 (Xanh 🟦)', 3: 'Đội 3 (Vàng 🟨)' };
+    const teamNames = { 1: 'Đội 1 (Cam 🟠)', 2: 'Đội 2 (Xanh Lá 🟢)', 3: 'Đội 3 (Thường ⚪)' };
 
     return `
       <div class="card" style="margin-bottom:0;">
@@ -318,7 +322,7 @@ class TeamPageController {
 
         ${m.scorers && m.scorers.length > 0 ? `
           <div style="margin-top:10px; font-size:0.8rem; color:var(--text-secondary); background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px;">
-            ⚽ <strong>Ghi bàn:</strong> ${m.scorers.map(s => `${s.name}${s.assist ? ` (KT: ${s.assist})` : ''}`).join(', ')}
+            ⚽ <strong>Ghi bàn:</strong> ${m.scorers.map(s => s.name).join(', ')}
           </div>
         ` : ''}
       </div>
@@ -329,6 +333,38 @@ class TeamPageController {
     if (!isoDate) return '';
     const [y, m, d] = isoDate.split('-');
     return `${d}/${m}/${y}`;
+  }
+
+  // Predicts the next matchup from the real "thắng ở lại, hòa đội lâu hơn ra"
+  // rule: the winner of the last match stays on and faces whoever was sitting
+  // out; on a draw, whichever of the two on-court teams had already played the
+  // match before that (so has been on court longer) is the one that goes out.
+  predictNextTeams() {
+    const matchDay = Store.getMatchDay();
+    const dayMatches = Store.getMatches()
+      .filter(m => m.matchDate === matchDay.date && m.status === 'finished')
+      .sort((a, b) => a.id - b.id);
+
+    if (dayMatches.length === 0) return { home: 1, away: 2 };
+
+    const last = dayMatches[dayMatches.length - 1];
+    const onCourt = [last.homeTeam, last.awayTeam];
+    const sitting = [1, 2, 3].find(t => !onCourt.includes(t));
+
+    if (last.homeScore !== last.awayScore) {
+      const winner = last.homeScore > last.awayScore ? last.homeTeam : last.awayTeam;
+      return { home: winner, away: sitting };
+    }
+
+    if (dayMatches.length >= 2) {
+      const prev = dayMatches[dayMatches.length - 2];
+      const prevOnCourt = [prev.homeTeam, prev.awayTeam];
+      const longStay = onCourt.find(t => prevOnCourt.includes(t));
+      const staying = onCourt.find(t => t !== longStay);
+      return { home: staying || onCourt[0], away: sitting };
+    }
+
+    return { home: onCourt[0], away: sitting };
   }
 
   addMatch() {
@@ -354,7 +390,7 @@ class TeamPageController {
   }
 
   deleteWeekData(dateStr) {
-    if (!confirm(`Xoá TOÀN BỘ trận đấu của tuần ${this.formatDate(dateStr)}? Không thể hoàn tác.`)) return;
+    if (!confirm(`Xoá danh sách trận đấu của tuần ${this.formatDate(dateStr)} để gọn UI? Bàn thắng vẫn được cộng dồn vào Vua Phá Lưới. Không thể hoàn tác.`)) return;
     Store.deleteMatchesForDate(dateStr);
     App.showToast('Đã xoá dữ liệu tuần đó.', 'info');
     this.render();
@@ -408,7 +444,7 @@ class TeamPageController {
     const match = Store.getMatches().find(m => m.id === matchId);
     if (!match) return;
 
-    const teamNames = { 1: 'Đội 1 (Đỏ)', 2: 'Đội 2 (Xanh)', 3: 'Đội 3 (Vàng)' };
+    const teamNames = { 1: 'Đội 1 (Cam)', 2: 'Đội 2 (Xanh Lá)', 3: 'Đội 3 (Thường)' };
 
     document.getElementById('match-index-input').value = match.id;
     document.getElementById('match-teams-label').textContent = `${teamNames[match.homeTeam]} vs ${teamNames[match.awayTeam]}`;
@@ -429,33 +465,26 @@ class TeamPageController {
         // those into one row per goal so old data still opens cleanly.
         const goalCount = s.goals || 1;
         for (let i = 0; i < goalCount; i++) {
-          this.addScorerRow(s.name, i === 0 ? (s.assist || '') : '');
+          this.addScorerRow(s.name);
         }
       });
     } else {
-      this.addScorerRow('', '');
+      this.addScorerRow('');
     }
 
     App.openModal('match-modal');
   }
 
-  addScorerRow(name = '', assist = '') {
+  addScorerRow(name = '') {
     const container = document.getElementById('match-scorers-container');
     if (!container) return;
-
-    const playerOptions = (selected) => Store.getPlayers()
-      .map(p => `<option value="${p.name}" ${p.name === selected ? 'selected' : ''}>${p.name} (${p.pos})</option>`).join('');
 
     const div = document.createElement('div');
     div.style.cssText = 'display:flex; gap:8px; align-items:center;';
     div.innerHTML = `
       <select class="form-select scorer-name-select" style="flex:2;">
         <option value="">-- Ai ghi bàn --</option>
-        ${playerOptions(name)}
-      </select>
-      <select class="form-select scorer-assist-select" style="flex:2;">
-        <option value="">-- Không kiến tạo --</option>
-        ${playerOptions(assist)}
+        ${Store.getPlayers().map(p => `<option value="${p.name}" ${p.name === name ? 'selected' : ''}>${p.name} (${p.pos})</option>`).join('')}
       </select>
       <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>
     `;
@@ -483,18 +512,14 @@ class TeamPageController {
       }
     }
 
-    // One row = one goal, each with an optional assist.
+    // One row = one goal.
     const scorerRows = document.querySelectorAll('#match-scorers-container > div');
     const scorers = [];
 
     scorerRows.forEach(row => {
       const nameSelect = row.querySelector('.scorer-name-select');
-      const assistSelect = row.querySelector('.scorer-assist-select');
       if (nameSelect && nameSelect.value) {
-        scorers.push({
-          name: nameSelect.value,
-          assist: (assistSelect && assistSelect.value) || null
-        });
+        scorers.push({ name: nameSelect.value });
       }
     });
 

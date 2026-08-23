@@ -74,31 +74,31 @@ class HomePageController {
 
         <div class="fixture-item">
           <div class="fixture-team">
-            <span class="team-badge team-badge-1">Đội 1 (Đỏ)</span>
+            <span class="team-badge team-badge-1">Đội 1 (Cam)</span>
           </div>
           <div class="fixture-vs">VS</div>
           <div class="fixture-team right">
-            <span class="team-badge team-badge-2">Đội 2 (Xanh)</span>
+            <span class="team-badge team-badge-2">Đội 2 (Xanh Lá)</span>
           </div>
         </div>
 
         <div class="fixture-item">
           <div class="fixture-team">
-            <span class="team-badge team-badge-2">Đội 2 (Xanh)</span>
+            <span class="team-badge team-badge-2">Đội 2 (Xanh Lá)</span>
           </div>
           <div class="fixture-vs">VS</div>
           <div class="fixture-team right">
-            <span class="team-badge team-badge-3">Đội 3 (Vàng)</span>
+            <span class="team-badge team-badge-3">Đội 3 (Thường)</span>
           </div>
         </div>
 
         <div class="fixture-item">
           <div class="fixture-team">
-            <span class="team-badge team-badge-3">Đội 3 (Vàng)</span>
+            <span class="team-badge team-badge-3">Đội 3 (Thường)</span>
           </div>
           <div class="fixture-vs">VS</div>
           <div class="fixture-team right">
-            <span class="team-badge team-badge-1">Đội 1 (Đỏ)</span>
+            <span class="team-badge team-badge-1">Đội 1 (Cam)</span>
           </div>
         </div>
       </div>
@@ -163,7 +163,10 @@ class HomePageController {
         <div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <span style="font-size:0.85rem; color:var(--text-secondary);">Thành viên: <strong style="color:var(--text-primary); font-size:0.95rem;">${currentPlayer.name}</strong></span>
-            <button class="btn btn-secondary btn-sm" onclick="Auth.logout()" style="padding:4px 8px; font-size:0.75rem;">Đổi PIN</button>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="HomePage.changeMyPin()" style="padding:4px 8px; font-size:0.75rem;">🔑 Đổi mã PIN</button>
+              <button class="btn btn-secondary btn-sm" onclick="Auth.logout()" style="padding:4px 8px; font-size:0.75rem;">Đăng xuất</button>
+            </div>
           </div>
 
           <div style="font-size:0.9rem; font-weight:700; margin-bottom:10px;">
@@ -184,6 +187,19 @@ class HomePageController {
         </div>
       `;
     }
+  }
+
+  changeMyPin() {
+    const player = Auth.getCurrentPlayer();
+    if (!player) return;
+    const newPin = prompt('Nhập mã PIN mới (4 chữ số):');
+    if (newPin === null) return;
+    const result = Store.changePlayerPin(player.id, newPin);
+    if (!result.ok) {
+      App.showToast(result.error, 'error');
+      return;
+    }
+    App.showToast('Đã đổi mã PIN thành công! Nhớ mã mới nhé.', 'success');
   }
 
   setUserAttendance(status) {
