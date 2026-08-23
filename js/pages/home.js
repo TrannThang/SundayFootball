@@ -135,7 +135,10 @@ class HomePageController {
         <div style="text-align:left;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <h3 style="font-size:0.95rem; font-weight:800; color:var(--accent-gold);">⚡ Quyền Quản Trị Viên (Admin)</h3>
-            <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">Đăng xuất</button>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-danger btn-sm" onclick="HomePage.forceLogoutAll()" style="padding:4px 8px; font-size:0.75rem;">🚪 Đăng xuất tất cả</button>
+              <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">Đăng xuất</button>
+            </div>
           </div>
           <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Bạn có thể nhanh chóng điểm danh giúp thành viên bên dưới:</p>
 
@@ -200,6 +203,15 @@ class HomePageController {
       return;
     }
     App.showToast('Đã đổi mã PIN thành công! Nhớ mã mới nhé.', 'success');
+  }
+
+  // Force every device currently logged in as a member (not Admin) back to
+  // the PIN screen, without touching those devices directly - bumps the
+  // shared session counter, each device notices next time it syncs.
+  forceLogoutAll() {
+    if (!confirm('Đăng xuất tất cả tài khoản thành viên đang đăng nhập trên mọi thiết bị? (Admin không bị ảnh hưởng, mọi người sẽ cần nhập lại mã PIN)')) return;
+    Store.bumpAuthEpoch();
+    App.showToast('Đã đăng xuất tất cả thành viên. Họ sẽ cần nhập lại mã PIN ở lần mở app tiếp theo.', 'success');
   }
 
   setUserAttendance(status) {

@@ -10,7 +10,22 @@ class AuthManager {
   }
 
   init() {
+    this.checkSessionValidity();
     this.updateHeaderUI();
+  }
+
+  // Force-logout mechanism: if an admin bumps Store's authEpoch (see
+  // HomePage.forceLogoutAll), every non-admin session stamped with an older
+  // epoch gets logged out automatically next time it's checked - on app boot
+  // and on every realtime update from CloudSync - no need to touch each
+  // device by hand. Admin sessions are always exempt.
+  checkSessionValidity() {
+    if (!this.currentUser || this.currentUser.isAdmin) return;
+    const epoch = typeof this.currentUser.epoch === 'number' ? this.currentUser.epoch : 0;
+    if (epoch < Store.getAuthEpoch()) {
+      this.saveSession(null);
+      if (window.App) App.showToast('Phiên đăng nhập đã hết hạn, vui lòng nhập lại mã PIN.', 'info');
+    }
   }
 
   loadSession() {
@@ -139,7 +154,7 @@ class AuthManager {
     // Check Player PIN
     const player = Store.getPlayerByPin(pin);
     if (player) {
-      this.saveSession({ id: player.id, name: player.name, isAdmin: false });
+      this.saveSession({ id: player.id, name: player.name, isAdmin: false, epoch: Store.getAuthEpoch() });
       App.showToast(`Chào mừng ${player.name}! 👋`, 'success');
       this.closePinModal();
       App.refreshCurrentPage();

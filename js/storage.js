@@ -168,6 +168,7 @@ class DataStore {
     parsed.period = parsed.period || { weekCount: 0, matchDates: [] };
     parsed.period.matchDates = parsed.period.matchDates || [];
     parsed.archivedGoals = DataStore.coerceKeyedObject(parsed.archivedGoals);
+    parsed.authEpoch = parsed.authEpoch || 0;
 
     return parsed;
   }
@@ -183,7 +184,8 @@ class DataStore {
       nextMatch: DEFAULT_NEXT_MATCH,
       skippedWeeks: [],
       period: { weekCount: 0, matchDates: [] },
-      archivedGoals: {}
+      archivedGoals: {},
+      authEpoch: 0
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     this.data = initial;
@@ -380,6 +382,20 @@ class DataStore {
 
   getArchivedGoals() {
     return this.data.archivedGoals || {};
+  }
+
+  getAuthEpoch() {
+    return this.data.authEpoch || 0;
+  }
+
+  // Bumps the shared session counter - any device whose saved login was
+  // stamped with an older epoch gets force-logged-out (see
+  // AuthManager.checkSessionValidity), everywhere it's open, without touching
+  // that device directly. Admin sessions are exempt by design.
+  bumpAuthEpoch() {
+    this.data.authEpoch = this.getAuthEpoch() + 1;
+    this.save();
+    return this.data.authEpoch;
   }
 
   // Deletes every match tagged with dateStr in one shot (admin correction tool,

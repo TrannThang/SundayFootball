@@ -51,6 +51,7 @@ class CloudSyncEngine {
     this.applyingRemoteUpdate = true;
     Store.data = normalized;
     localStorage.setItem('SUNDAY_FOOTBALL_DATA_V3', JSON.stringify(normalized));
+    if (window.Auth) Auth.checkSessionValidity();
     if (window.App) App.refreshCurrentPage();
     this.applyingRemoteUpdate = false;
   }
