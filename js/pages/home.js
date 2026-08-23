@@ -140,6 +140,8 @@ class HomePageController {
               <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">Đăng xuất</button>
             </div>
           </div>
+          <button class="btn btn-outline btn-sm" onclick="PushNotify.enable()" style="padding:4px 8px; font-size:0.75rem; margin-bottom:10px;">🔔 Bật thông báo cho máy này</button>
+
           <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Bạn có thể nhanh chóng điểm danh giúp thành viên bên dưới:</p>
 
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -171,6 +173,8 @@ class HomePageController {
               <button class="btn btn-secondary btn-sm" onclick="Auth.logout()" style="padding:4px 8px; font-size:0.75rem;">Đăng xuất</button>
             </div>
           </div>
+
+          <button class="btn btn-outline btn-sm" onclick="PushNotify.enable()" style="padding:4px 8px; font-size:0.75rem; margin-bottom:10px;">🔔 Bật thông báo cho máy này</button>
 
           <div style="font-size:0.9rem; font-weight:700; margin-bottom:10px;">
             Trạng thái hiện tại của bạn:

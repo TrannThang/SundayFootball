@@ -4,7 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Sunday Football · Quản Lý Đội Bóng Nội Bộ</title>
-  
+
+  <!-- PWA: lets "Thêm vào màn hình chính" install a real app (icon, splash,
+       standalone window) instead of just a browser bookmark. -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#06b6d4">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SF Football">
+
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -342,26 +351,31 @@
     </div>
   </div>
 
-  <!-- Firebase (Realtime cross-device sync) -->
+  <!-- Firebase (Realtime cross-device sync + push notifications) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=2.4"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
+  <script src="js/firebase-config.js?v=2.5"></script>
 
   <!-- Telegram (optional vote notifications) -->
-  <script src="js/telegram-config.js?v=2.4"></script>
-  <script src="js/telegram-notify.js?v=2.4"></script>
+  <script src="js/telegram-config.js?v=2.5"></script>
+  <script src="js/telegram-notify.js?v=2.5"></script>
+
+  <!-- Push Notifications (optional, needs js/push-config.js VAPID key) -->
+  <script src="js/push-config.js?v=2.5"></script>
+  <script src="js/push-notify.js?v=2.5"></script>
 
   <!-- JavaScript Modules -->
-  <script src="js/theme.js?v=2.4"></script>
-  <script src="js/cloud-sync.js?v=2.4"></script>
-  <script src="js/storage.js?v=2.4"></script>
-  <script src="js/auth.js?v=2.4"></script>
-  <script src="js/app.js?v=2.4"></script>
-  <script src="js/pages/home.js?v=2.4"></script>
-  <script src="js/pages/team.js?v=2.4"></script>
-  <script src="js/pages/squad.js?v=2.4"></script>
-  <script src="js/pages/fund.js?v=2.4"></script>
-  <script src="js/pages/ranking.js?v=2.4"></script>
-  <script src="js/pages/player-detail.js?v=2.4"></script>
+  <script src="js/theme.js?v=2.5"></script>
+  <script src="js/cloud-sync.js?v=2.5"></script>
+  <script src="js/storage.js?v=2.5"></script>
+  <script src="js/auth.js?v=2.5"></script>
+  <script src="js/app.js?v=2.5"></script>
+  <script src="js/pages/home.js?v=2.5"></script>
+  <script src="js/pages/team.js?v=2.5"></script>
+  <script src="js/pages/squad.js?v=2.5"></script>
+  <script src="js/pages/fund.js?v=2.5"></script>
+  <script src="js/pages/ranking.js?v=2.5"></script>
+  <script src="js/pages/player-detail.js?v=2.5"></script>
 </body>
 </html>

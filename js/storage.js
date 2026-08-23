@@ -169,6 +169,7 @@ class DataStore {
     parsed.period.matchDates = parsed.period.matchDates || [];
     parsed.archivedGoals = DataStore.coerceKeyedObject(parsed.archivedGoals);
     parsed.authEpoch = parsed.authEpoch || 0;
+    parsed.pushTokens = DataStore.coerceKeyedObject(parsed.pushTokens);
 
     return parsed;
   }
@@ -185,7 +186,8 @@ class DataStore {
       skippedWeeks: [],
       period: { weekCount: 0, matchDates: [] },
       archivedGoals: {},
-      authEpoch: 0
+      authEpoch: 0,
+      pushTokens: {}
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     this.data = initial;
@@ -396,6 +398,19 @@ class DataStore {
     this.data.authEpoch = this.getAuthEpoch() + 1;
     this.save();
     return this.data.authEpoch;
+  }
+
+  // ownerId is a player id (number) or the string 'admin'. Multiple devices
+  // per person are supported - each browser/phone that enables notifications
+  // adds its own FCM token instead of replacing anyone else's.
+  addPushToken(ownerId, token) {
+    if (!this.data.pushTokens) this.data.pushTokens = {};
+    const key = String(ownerId);
+    const existing = this.data.pushTokens[key] || [];
+    if (existing.includes(token)) return;
+    this.data.pushTokens[key] = [...existing, token];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    if (window.CloudSync) CloudSync.pushFieldUpdate(`pushTokens/${key}`, this.data.pushTokens[key]);
   }
 
   // Deletes every match tagged with dateStr in one shot (admin correction tool,

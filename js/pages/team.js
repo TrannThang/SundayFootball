@@ -77,6 +77,9 @@ class TeamPageController {
             <button class="btn btn-secondary btn-sm" onclick="TeamPage.toggleManualEdit()">
               ${this.manualEditMode ? '✅ Xong' : '✏️ Sửa'}
             </button>
+            <button class="btn btn-outline btn-sm" onclick="PushNotify.notifyLineupReady()">
+              📣 Báo đội hình
+            </button>
           </div>
         ` : ''}
       </div>
