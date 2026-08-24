@@ -89,9 +89,14 @@ module.exports = async (req, res) => {
       return;
     }
 
+    // data-only (not `notification`) on purpose: a `notification` payload
+    // makes the browser auto-display it itself AND still deliver it to our
+    // handlers (foreground onMessage / background onBackgroundMessage),
+    // which used to also call showNotification() - showing the same push
+    // twice on one device. Data-only means only our own code ever displays it.
     const response = await admin.messaging().sendEachForMulticast({
       tokens,
-      notification: { title, body },
+      data: { title, body },
     });
 
     // Prune tokens FCM reports as dead (uninstalled app, revoked permission,

@@ -26,10 +26,15 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// The server sends a data-only payload (see api/send-push.js) on purpose -
+// a "notification" payload makes the browser auto-display a system
+// notification AND still fire this handler, which used to also call
+// showNotification() itself, showing the same push twice on one device.
+// Data-only means nothing is shown until this handler explicitly does it.
 messaging.onBackgroundMessage((payload) => {
-  const title = (payload.notification && payload.notification.title) || 'Sunday Football';
+  const title = (payload.data && payload.data.title) || 'Sunday Football';
   const options = {
-    body: (payload.notification && payload.notification.body) || '',
+    body: (payload.data && payload.data.body) || '',
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
   };

@@ -54,8 +54,8 @@ class PushNotifyEngine {
       // Foreground messages don't show an OS notification on their own -
       // surface them as a toast instead while the app is actually open.
       messaging.onMessage((payload) => {
-        const title = (payload.notification && payload.notification.title) || '';
-        const body = (payload.notification && payload.notification.body) || '';
+        const title = (payload.data && payload.data.title) || '';
+        const body = (payload.data && payload.data.body) || '';
         App.showToast(`🔔 ${title}: ${body}`, 'info');
       });
 
