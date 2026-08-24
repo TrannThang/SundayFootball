@@ -121,11 +121,19 @@ class PushNotifyEngine {
 
   async sendToSelected() {
     if (!Auth.isAdmin()) return;
+    // Guard against double-tap: without this, a fast double-click on the send
+    // button fires two separate API calls, each one a real successful send -
+    // the recipient then gets the exact same push twice.
+    if (this.isSending) return;
     const playerIds = [...document.querySelectorAll('.notify-recipient-check:checked')].map(cb => cb.value);
     if (playerIds.length === 0) {
       App.showToast('Chọn ít nhất 1 người để gửi.', 'error');
       return;
     }
+    this.isSending = true;
+    const sendBtn = document.getElementById('notify-send-btn');
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = 'Đang gửi...'; }
+
     const title = this.pendingTitle || '⚽ Đội hình đã sẵn sàng!';
     const body = this.pendingBody || 'Admin vừa chia xong đội hình - vào xem ngay!';
     try {
@@ -152,6 +160,9 @@ class PushNotifyEngine {
     } catch (e) {
       console.error('sendToSelected failed', e);
       App.showToast('Không gửi được thông báo (server chưa sẵn sàng hoặc offline).', 'error');
+    } finally {
+      this.isSending = false;
+      if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = '📣 Gửi Thông Báo'; }
     }
   }
 }

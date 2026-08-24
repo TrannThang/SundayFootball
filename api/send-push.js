@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
       return Array.isArray(v) ? v : Object.values(v || {});
     };
 
-    const tokens = eligiblePlayerIds.flatMap(getTokenList).filter(Boolean);
+    const tokens = [...new Set(eligiblePlayerIds.flatMap(getTokenList).filter(Boolean))];
 
     if (tokens.length === 0) {
       res.status(200).json({ ok: true, sent: 0, note: 'Không ai trong danh sách đã bật thông báo trên máy.' });
