@@ -363,10 +363,11 @@
   <div id="notify-modal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 class="modal-title">📣 Báo Đội Hình - Chọn Người Nhận</h3>
+        <h3 class="modal-title">📣 Gửi Thông Báo - Chọn Người Nhận</h3>
         <button class="modal-close-btn" onclick="App.closeModal('notify-modal')">&times;</button>
       </div>
-      <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="PushNotify.selectAll()">🔵 Chọn tất cả mọi người</button>
         <button class="btn btn-outline btn-sm" onclick="PushNotify.selectAllGoing()">✅ Chọn tất cả đã Đi</button>
         <button class="btn btn-outline btn-sm" onclick="PushNotify.selectNone()">◻️ Bỏ chọn hết</button>
       </div>
@@ -396,28 +397,28 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
-  <script src="js/firebase-config.js?v=2.8"></script>
+  <script src="js/firebase-config.js?v=3.0"></script>
 
   <!-- Telegram (optional vote notifications) -->
-  <script src="js/telegram-config.js?v=2.8"></script>
-  <script src="js/telegram-notify.js?v=2.8"></script>
+  <script src="js/telegram-config.js?v=3.0"></script>
+  <script src="js/telegram-notify.js?v=3.0"></script>
 
   <!-- Push Notifications (optional, needs js/push-config.js VAPID key) -->
-  <script src="js/push-config.js?v=2.8"></script>
-  <script src="js/push-notify.js?v=2.8"></script>
-  <script src="js/notify-inbox.js?v=2.8"></script>
+  <script src="js/push-config.js?v=3.0"></script>
+  <script src="js/push-notify.js?v=3.0"></script>
+  <script src="js/notify-inbox.js?v=3.0"></script>
 
   <!-- JavaScript Modules -->
-  <script src="js/theme.js?v=2.8"></script>
-  <script src="js/cloud-sync.js?v=2.8"></script>
-  <script src="js/storage.js?v=2.8"></script>
-  <script src="js/auth.js?v=2.8"></script>
-  <script src="js/app.js?v=2.8"></script>
-  <script src="js/pages/home.js?v=2.8"></script>
-  <script src="js/pages/team.js?v=2.8"></script>
-  <script src="js/pages/squad.js?v=2.8"></script>
-  <script src="js/pages/fund.js?v=2.8"></script>
-  <script src="js/pages/ranking.js?v=2.8"></script>
-  <script src="js/pages/player-detail.js?v=2.8"></script>
+  <script src="js/theme.js?v=3.0"></script>
+  <script src="js/cloud-sync.js?v=3.0"></script>
+  <script src="js/storage.js?v=3.0"></script>
+  <script src="js/auth.js?v=3.0"></script>
+  <script src="js/app.js?v=3.0"></script>
+  <script src="js/pages/home.js?v=3.0"></script>
+  <script src="js/pages/team.js?v=3.0"></script>
+  <script src="js/pages/squad.js?v=3.0"></script>
+  <script src="js/pages/fund.js?v=3.0"></script>
+  <script src="js/pages/ranking.js?v=3.0"></script>
+  <script src="js/pages/player-detail.js?v=3.0"></script>
 </body>
 </html>

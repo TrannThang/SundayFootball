@@ -66,22 +66,46 @@ class PushNotifyEngine {
     }
   }
 
-  // Admin picks exactly who gets the "lineup ready" push at send time -
-  // either everyone currently 'going', or a hand-picked list. No persistent
-  // per-player setting involved; it's decided fresh every time this opens.
-  openNotifyModal() {
+  // Admin picks exactly who gets a push at send time - either everyone
+  // currently 'going' (or everyone, for announcements like a rest week that
+  // concern people regardless of their vote), or a hand-picked list. No
+  // persistent per-player setting involved; it's decided fresh every open.
+  // title/body become the message actually sent (see sendToSelected);
+  // defaultAll pre-checks every player instead of just the 'going' ones.
+  openNotifyModal(title, body, defaultAll = false) {
     if (!Auth.isAdmin()) return;
     const list = document.getElementById('notify-modal-list');
     if (!list) return;
+    this.pendingTitle = title || '⚽ Đội hình đã sẵn sàng!';
+    this.pendingBody = body || 'Admin vừa chia xong đội hình - vào xem ngay!';
     const players = Store.getPlayers();
     list.innerHTML = players.map(p => `
       <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; background:rgba(var(--bg-dark-rgb), 0.6); border-radius:8px; cursor:pointer;">
-        <input type="checkbox" class="notify-recipient-check" value="${p.id}" ${p.attendance === 'going' ? 'checked' : ''}>
+        <input type="checkbox" class="notify-recipient-check" value="${p.id}" ${(defaultAll || p.attendance === 'going') ? 'checked' : ''}>
         <span style="flex:1; font-size:0.85rem; font-weight:600;">${p.name}</span>
         <span style="font-size:0.72rem; color:var(--text-muted);">${p.attendance === 'going' ? '✅ Đi' : p.attendance === 'absent' ? '❌ Vắng' : '⏳ Chưa vote'}</span>
       </label>
     `).join('');
     App.openModal('notify-modal');
+  }
+
+  // Convenience presets for the two other common announcements - reuse the
+  // exact same recipient-picker modal, just with different message text and
+  // defaulting to "everyone" instead of "everyone going".
+  notifyRestWeek() {
+    if (!Auth.isAdmin()) return;
+    const [y, m, d] = Store.getMatchDay().date.split('-');
+    this.openNotifyModal('🌧 Nghỉ đá tuần này', `Chủ Nhật ${d}/${m}/${y} nghỉ, không đá nhé anh em!`, true);
+  }
+
+  notifyCheckinReminder() {
+    if (!Auth.isAdmin()) return;
+    const [y, m, d] = Store.getMatchDay().date.split('-');
+    this.openNotifyModal('📢 Nhắc điểm danh', `Chủ Nhật ${d}/${m}/${y} có đá - vào điểm danh nhé!`, true);
+  }
+
+  selectAll() {
+    document.querySelectorAll('.notify-recipient-check').forEach(cb => { cb.checked = true; });
   }
 
   selectAllGoing() {
@@ -102,8 +126,8 @@ class PushNotifyEngine {
       App.showToast('Chọn ít nhất 1 người để gửi.', 'error');
       return;
     }
-    const title = '⚽ Đội hình đã sẵn sàng!';
-    const body = 'Admin vừa chia xong đội hình - vào xem ngay!';
+    const title = this.pendingTitle || '⚽ Đội hình đã sẵn sàng!';
+    const body = this.pendingBody || 'Admin vừa chia xong đội hình - vào xem ngay!';
     try {
       const res = await fetch('/api/send-push', {
         method: 'POST',

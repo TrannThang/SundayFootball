@@ -236,7 +236,12 @@ class TeamPageController {
           ${currentSkip ? `
             <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:10px 12px; font-size:0.82rem;">
               🌧 <strong>Tuần này nghỉ:</strong> ${currentSkip.reason}
-              ${isAdmin ? `<button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="TeamPage.unmarkWeekSkipped()">Huỷ đánh dấu nghỉ</button>` : ''}
+              ${isAdmin ? `
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                  <button class="btn btn-secondary btn-sm" onclick="TeamPage.unmarkWeekSkipped()">Huỷ đánh dấu nghỉ</button>
+                  <button class="btn btn-outline btn-sm" onclick="PushNotify.notifyRestWeek()">📣 Báo nghỉ cho mọi người</button>
+                </div>
+              ` : ''}
             </div>
           ` : isAdmin ? (() => {
             const predicted = this.predictNextTeams();
@@ -257,7 +262,11 @@ class TeamPageController {
               <button class="btn btn-primary btn-sm" onclick="TeamPage.addMatch()">➕ Thêm trận</button>
             </div>
             <p style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Đã tự điền đội theo luật thắng ở lại / hòa đội lâu hơn ra sân - bạn vẫn sửa được nếu cần.</p>
-            <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="TeamPage.markWeekSkipped()">🌧 Đánh dấu tuần này nghỉ</button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+              <button class="btn btn-outline btn-sm" onclick="TeamPage.markWeekSkipped()">🌧 Đánh dấu tuần này nghỉ</button>
+              <button class="btn btn-outline btn-sm" onclick="PushNotify.notifyRestWeek()">📣 Báo nghỉ cho mọi người</button>
+              <button class="btn btn-outline btn-sm" onclick="PushNotify.notifyCheckinReminder()">📢 Nhắc điểm danh</button>
+            </div>
           `; })() : ''}
         </div>
 
@@ -282,7 +291,7 @@ class TeamPageController {
               </div>
             ` : `
               <div style="display:flex; flex-direction:column; gap:10px;">
-                ${(groups[dateKey] || []).map(m => this.renderMatchCard(m, isAdmin)).join('')}
+                ${[...(groups[dateKey] || [])].reverse().map(m => this.renderMatchCard(m, isAdmin)).join('')}
               </div>
             `}
           </div>
