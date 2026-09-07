@@ -306,9 +306,13 @@ class DataStore {
     // Đủ 4 buổi thì chốt sổ: gửi tổng kết chu kỳ qua Telegram rồi dọn danh sách
     // trận đấu của 4 buổi đó (chỉ để gọn "Lịch Sử" trên web) - bàn thắng được
     // archive lại trước nên Vua Phá Lưới vẫn cộng dồn, không mất.
+    // Tuần bị đánh dấu "nghỉ" vẫn được ghi vào matchDates (để còn báo cáo lại
+    // trong 🌧 Tuần nghỉ khi chốt chu kỳ) nhưng KHÔNG tính vào weekCount - nghỉ
+    // không phải là 1 buổi đá thực tế, chỉ buổi có đá thật mới được tính.
+    const wasSkipped = (this.data.skippedWeeks || []).some(s => s.date === oldMatchDayDate);
     if (!this.data.period) this.data.period = { weekCount: 0, matchDates: [] };
     this.data.period.matchDates.push(oldMatchDayDate);
-    this.data.period.weekCount++;
+    if (!wasSkipped) this.data.period.weekCount++;
 
     if (this.data.period.weekCount >= 4) {
       const cycleDates = this.data.period.matchDates;
