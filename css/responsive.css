@@ -626,3 +626,84 @@ div#page-home .card.attendance-action-card > div > div span {
     font-size: 10px;
   }
 }
+
+/* ==========================================================================
+   JERSEY DESIGN VOTING GRID
+   ========================================================================== */
+.jersey-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+@media (min-width: 480px) {
+  .jersey-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.jersey-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.jersey-card:active {
+  transform: scale(0.97);
+}
+
+.jersey-card.selected {
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+}
+
+.jersey-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: var(--bg-surface);
+}
+
+.jersey-card-num {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(var(--bg-dark-rgb), 0.75);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  z-index: 2;
+}
+
+.jersey-card-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--accent-emerald);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  z-index: 2;
+}
+
+.jersey-card-label {
+  padding: 6px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -4,6 +4,24 @@
 
 const STORAGE_KEY = 'SUNDAY_FOOTBALL_DATA_V3';
 
+// The 12 jersey designs members vote on (see PAGE 6: JERSEY VOTING). Numbers
+// are the ones referenced everywhere else (Telegram messages, results) -
+// keep them stable, only edit label/img if the actual design changes.
+const JERSEY_CATALOG = [
+  { num: 1, label: 'ZED - Xanh Biển Đậm', img: 'img/jerseys/1.jpg' },
+  { num: 2, label: 'RAIDER - Đen Đỏ', img: 'img/jerseys/2.jpg' },
+  { num: 3, label: 'Bộ Đồ Thể Thao 2026 - Đen', img: 'img/jerseys/3.jpg' },
+  { num: 4, label: 'SC04 - Xanh Đen', img: 'img/jerseys/4.jpg' },
+  { num: 5, label: 'Đội Tuyển - Kem (2 Sao)', img: 'img/jerseys/5.jpg' },
+  { num: 6, label: 'Set Big Size - Đỏ Đen', img: 'img/jerseys/6.jpg' },
+  { num: 7, label: 'HORSE - Đỏ Đậm', img: 'img/jerseys/7.jpg' },
+  { num: 8, label: 'Bộ Đồ Thể Thao 2026 - Trắng Xanh', img: 'img/jerseys/8.jpg' },
+  { num: 9, label: 'KEM', img: 'img/jerseys/9.jpg' },
+  { num: 10, label: 'SQUARE - Cà Phê', img: 'img/jerseys/10.jpg' },
+  { num: 11, label: 'THE ROCK - Chì Đen', img: 'img/jerseys/11.jpg' },
+  { num: 12, label: 'UTRON - Navy Đen', img: 'img/jerseys/12.jpg' }
+];
+
 // 21 Official Real Members Roster with Sân 5 (Futsal) Positions
 const DEFAULT_PLAYERS = [
   { id: 1, name: 'Trần Thắng', fullName: 'Trần Thắng', pos: 'PIV', ovr: 74, teamId: 1, pin: '7634', stats: { pac: 78, sho: 85, pas: 60, dri: 72, def: 38, phy: 70 }, attendance: 'going', goals: 5, assists: 2, streak: 3 },
@@ -170,6 +188,7 @@ class DataStore {
     parsed.archivedGoals = DataStore.coerceKeyedObject(parsed.archivedGoals);
     parsed.authEpoch = parsed.authEpoch || 0;
     parsed.pushTokens = DataStore.coerceKeyedObject(parsed.pushTokens);
+    parsed.jerseyVotes = DataStore.coerceKeyedObject(parsed.jerseyVotes);
     parsed.notifications = parsed.notifications || [];
     parsed.notifyLastSeen = DataStore.coerceKeyedObject(parsed.notifyLastSeen);
 
@@ -191,7 +210,8 @@ class DataStore {
       authEpoch: 0,
       pushTokens: {},
       notifications: [],
-      notifyLastSeen: {}
+      notifyLastSeen: {},
+      jerseyVotes: {}
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     this.data = initial;
@@ -458,6 +478,75 @@ class DataStore {
     const notes = this.getNotificationsFor(ownerId);
     if (!lastSeen) return notes.length;
     return notes.filter(n => n.createdAt > lastSeen).length;
+  }
+
+  // ===== Jersey design voting (Trang "Mẫu Áo") =====
+
+  getJerseyCatalog() {
+    return JERSEY_CATALOG;
+  }
+
+  getJerseyVotes() {
+    return this.data.jerseyVotes || {};
+  }
+
+  getJerseyVoteFor(playerId) {
+    return (this.data.jerseyVotes || {})[String(playerId)] || null;
+  }
+
+  hasVotedJersey(playerId) {
+    return !!this.getJerseyVoteFor(playerId);
+  }
+
+  // picks: array of 1-2 design numbers (ignored if noOrder is true). Blocks a
+  // second submission once someone has already voted - only an admin unlock
+  // (see adminUnlockJerseyVote) clears the way for them to vote again.
+  submitJerseyVote(playerId, picks, noOrder) {
+    const key = String(playerId);
+    if (this.hasVotedJersey(key)) {
+      return { ok: false, error: 'Bạn đã chốt mẫu áo rồi, không thể đổi lại (nhờ Admin mở lại nếu cần).' };
+    }
+    if (!noOrder) {
+      const clean = [...new Set((picks || []).map(Number))].filter(n => n >= 1 && n <= 12);
+      if (clean.length === 0 || clean.length > 2) {
+        return { ok: false, error: 'Chọn 1 hoặc 2 mẫu (tối đa 2), hoặc chọn "Không đặt áo".' };
+      }
+      picks = clean;
+    } else {
+      picks = [];
+    }
+
+    if (!this.data.jerseyVotes) this.data.jerseyVotes = {};
+    this.data.jerseyVotes[key] = { picks, noOrder: !!noOrder, votedAt: new Date().toISOString() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    if (window.CloudSync) CloudSync.pushFieldUpdate(`jerseyVotes/${key}`, this.data.jerseyVotes[key]);
+    return { ok: true };
+  }
+
+  // Admin-only escape hatch: clears one player's vote so they can submit again.
+  adminUnlockJerseyVote(playerId) {
+    const key = String(playerId);
+    if (!this.data.jerseyVotes) return;
+    delete this.data.jerseyVotes[key];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    if (window.CloudSync) CloudSync.pushFieldUpdate(`jerseyVotes/${key}`, null);
+  }
+
+  // Tally of how many people picked each design number, sorted most-picked
+  // first, plus how many people opted out entirely.
+  getJerseyResults() {
+    const votes = Object.values(this.getJerseyVotes());
+    const counts = {};
+    JERSEY_CATALOG.forEach(j => { counts[j.num] = 0; });
+    let noOrderCount = 0;
+    votes.forEach(v => {
+      if (v.noOrder) { noOrderCount++; return; }
+      (v.picks || []).forEach(n => { if (counts[n] !== undefined) counts[n]++; });
+    });
+    const ranked = JERSEY_CATALOG
+      .map(j => ({ ...j, count: counts[j.num] }))
+      .sort((a, b) => b.count - a.count);
+    return { ranked, totalVoters: votes.length, noOrderCount };
   }
 
   // Deletes every match tagged with dateStr in one shot (admin correction tool,

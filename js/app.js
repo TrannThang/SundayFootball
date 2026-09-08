@@ -62,11 +62,11 @@ class AppController {
       case 'squad':
         if (window.SquadPage) SquadPage.render();
         break;
-      case 'fund':
-        if (window.FundPage) FundPage.render();
-        break;
       case 'ranking':
         if (window.RankingPage) RankingPage.render();
+        break;
+      case 'jersey':
+        if (window.JerseyPage) JerseyPage.render();
         break;
       default:
         console.warn(`Unknown page: ${pageId}`);
