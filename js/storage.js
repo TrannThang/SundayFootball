@@ -189,6 +189,8 @@ class DataStore {
     parsed.authEpoch = parsed.authEpoch || 0;
     parsed.pushTokens = DataStore.coerceKeyedObject(parsed.pushTokens);
     parsed.jerseyVotes = DataStore.coerceKeyedObject(parsed.jerseyVotes);
+    parsed.jerseyPrintInfo = DataStore.coerceKeyedObject(parsed.jerseyPrintInfo);
+    parsed.jerseySelectionLocked = !!parsed.jerseySelectionLocked;
     parsed.notifications = parsed.notifications || [];
     parsed.notifyLastSeen = DataStore.coerceKeyedObject(parsed.notifyLastSeen);
 
@@ -211,7 +213,9 @@ class DataStore {
       pushTokens: {},
       notifications: [],
       notifyLastSeen: {},
-      jerseyVotes: {}
+      jerseyVotes: {},
+      jerseyPrintInfo: {},
+      jerseySelectionLocked: false
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     this.data = initial;
@@ -502,6 +506,9 @@ class DataStore {
   // second submission once someone has already voted - only an admin unlock
   // (see adminUnlockJerseyVote) clears the way for them to vote again.
   submitJerseyVote(playerId, picks, noOrder) {
+    if (this.isJerseySelectionLocked()) {
+      return { ok: false, error: 'Admin đã khoá bình chọn mẫu áo, không thể chọn nữa.' };
+    }
     const key = String(playerId);
     if (this.hasVotedJersey(key)) {
       return { ok: false, error: 'Bạn đã chốt mẫu áo rồi, không thể đổi lại (nhờ Admin mở lại nếu cần).' };
@@ -547,6 +554,48 @@ class DataStore {
       .map(j => ({ ...j, count: counts[j.num] }))
       .sort((a, b) => b.count - a.count);
     return { ranked, totalVoters: votes.length, noOrderCount };
+  }
+
+  // Global switch (admin-only) that closes BOTH the design vote and the
+  // name/number entry for everyone at once - separate from the per-player
+  // one-shot lock above, this is the "we're placing the order now" cutoff.
+  isJerseySelectionLocked() {
+    return !!this.data.jerseySelectionLocked;
+  }
+
+  setJerseySelectionLocked(locked) {
+    this.data.jerseySelectionLocked = !!locked;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    if (window.CloudSync) CloudSync.pushFieldUpdate('jerseySelectionLocked', !!locked);
+  }
+
+  // ===== Jersey print info (tên in + số áo) - separate from the design pick
+  // above so someone who already locked their design choice can still come
+  // back and fill this in. Freely editable (to fix typos) until the admin
+  // flips the global lock. =====
+
+  getJerseyPrintInfo(playerId) {
+    return (this.data.jerseyPrintInfo || {})[String(playerId)] || null;
+  }
+
+  setJerseyPrintInfo(playerId, name, number) {
+    if (this.isJerseySelectionLocked()) {
+      return { ok: false, error: 'Admin đã khoá, không thể điền/sửa tên số áo nữa.' };
+    }
+    const cleanName = String(name || '').trim().toUpperCase().slice(0, 20);
+    const cleanNumber = String(number || '').trim();
+    if (!cleanName) {
+      return { ok: false, error: 'Nhập tên in trên áo.' };
+    }
+    if (!/^\d{1,2}$/.test(cleanNumber) || Number(cleanNumber) > 99) {
+      return { ok: false, error: 'Số áo phải là số từ 0 đến 99.' };
+    }
+    const key = String(playerId);
+    if (!this.data.jerseyPrintInfo) this.data.jerseyPrintInfo = {};
+    this.data.jerseyPrintInfo[key] = { name: cleanName, number: cleanNumber, updatedAt: new Date().toISOString() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    if (window.CloudSync) CloudSync.pushFieldUpdate(`jerseyPrintInfo/${key}`, this.data.jerseyPrintInfo[key]);
+    return { ok: true };
   }
 
   // Deletes every match tagged with dateStr in one shot (admin correction tool,

@@ -19,6 +19,8 @@ class JerseyPageController {
     const currentPlayer = Auth.getCurrentPlayer();
     const results = Store.getJerseyResults();
 
+    const locked = Store.isJerseySelectionLocked();
+
     container.innerHTML = `
       <div class="card">
         <div class="card-title" style="margin-bottom:6px;">
@@ -30,9 +32,16 @@ class JerseyPageController {
         </p>
       </div>
 
+      ${locked ? `
+        <div class="card" style="margin-top:14px; background:rgba(244,63,94,0.08); border:1px solid rgba(244,63,94,0.3); text-align:center;">
+          <span style="font-weight:800; color:var(--accent-rose);">🔒 Admin đã khoá chọn mẫu áo & điền tên số - đang chốt đơn đặt hàng.</span>
+        </div>
+      ` : ''}
+
       ${Auth.isAdmin() ? this.renderAdminPanel() : ''}
       ${!Auth.isLoggedIn() ? this.renderLoginPrompt() : ''}
       ${currentPlayer ? this.renderVotingSection(currentPlayer) : ''}
+      ${currentPlayer ? this.renderPrintInfoSection(currentPlayer) : ''}
 
       <div class="card" style="margin-top:14px;">
         <div class="card-header-flex">
@@ -65,11 +74,17 @@ class JerseyPageController {
   }
 
   renderAdminPanel() {
+    const locked = Store.isJerseySelectionLocked();
     const votes = Store.getJerseyVotes();
     const votedPlayers = Store.getPlayers().filter(p => votes[String(p.id)]);
     return `
       <div class="card" style="margin-top:14px; border:1px solid rgba(245,158,11,0.3);">
-        <div class="card-title" style="color:var(--accent-gold); margin-bottom:8px;">⚡ Quản Lý (Admin)</div>
+        <div class="card-header-flex" style="margin-bottom:8px;">
+          <div class="card-title" style="color:var(--accent-gold); margin-bottom:0;">⚡ Quản Lý (Admin)</div>
+          <button class="btn ${locked ? 'btn-secondary' : 'btn-danger'} btn-sm" onclick="JerseyPage.toggleGlobalLock()">
+            ${locked ? '🔓 Mở khoá lại' : '🔒 Khoá bình chọn & tên số'}
+          </button>
+        </div>
         ${votedPlayers.length === 0 ? `
           <p style="font-size:0.8rem; color:var(--text-muted);">Chưa có ai chốt mẫu.</p>
         ` : `
@@ -78,7 +93,9 @@ class JerseyPageController {
               ${votedPlayers.map(p => {
                 const v = votes[String(p.id)];
                 const label = v.noOrder ? 'Không đặt áo' : `Mẫu ${v.picks.join(', ')}`;
-                return `<option value="${p.id}">${p.name} - ${label}</option>`;
+                const print = Store.getJerseyPrintInfo(p.id);
+                const printLabel = print ? ` • "${print.name}" #${print.number}` : '';
+                return `<option value="${p.id}">${p.name} - ${label}${printLabel}</option>`;
               }).join('')}
             </select>
             <button class="btn btn-danger btn-sm" onclick="JerseyPage.adminUnlock()">🔓 Mở lại cho chọn lại</button>
@@ -100,6 +117,14 @@ class JerseyPageController {
       `;
     }
 
+    if (Store.isJerseySelectionLocked()) {
+      return `
+        <div class="card" style="margin-top:14px; text-align:center; color:var(--text-muted);">
+          Admin đã khoá, bạn không kịp chọn mẫu áo cho đợt này.
+        </div>
+      `;
+    }
+
     return `
       <div class="card" style="margin-top:14px;">
         <div style="font-size:0.9rem; font-weight:700; margin-bottom:8px;">Chào ${player.name}, chọn mẫu áo của bạn:</div>
@@ -108,6 +133,44 @@ class JerseyPageController {
           <button class="btn ${this.noOrder ? 'btn-danger' : 'btn-outline'} btn-sm" onclick="JerseyPage.toggleNoOrder()">🚫 Không đặt áo</button>
           <button class="btn btn-primary btn-block" onclick="JerseyPage.submit()">✅ Chốt Lựa Chọn</button>
         </div>
+      </div>
+    `;
+  }
+
+  // Only relevant once someone has actually ordered a jersey (voted and not
+  // "no order") - lets them type the name/number to print, editable until
+  // the admin's global lock closes it.
+  renderPrintInfoSection(player) {
+    const vote = Store.getJerseyVoteFor(player.id);
+    if (!vote || vote.noOrder) return '';
+
+    const info = Store.getJerseyPrintInfo(player.id);
+    const locked = Store.isJerseySelectionLocked();
+
+    if (locked && !info) {
+      return `
+        <div class="card" style="margin-top:14px; text-align:center; color:var(--text-muted);">
+          Admin đã khoá, bạn không kịp điền tên/số áo cho đợt này.
+        </div>
+      `;
+    }
+
+    return `
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title" style="margin-bottom:8px;">
+          <span class="card-title-icon">🖨️</span>
+          <span>Tên & Số In Trên Áo</span>
+        </div>
+        ${locked ? `
+          <div style="font-size:0.9rem; font-weight:700;">Đã lưu: <span style="color:var(--accent-emerald);">"${info.name}" - Số ${info.number}</span></div>
+        ` : `
+          <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <input id="jersey-print-name" class="form-input" type="text" maxlength="20" placeholder="Tên in (VD: THẮNG)" value="${info ? info.name : ''}" style="flex:2;">
+            <input id="jersey-print-number" class="form-input" type="text" inputmode="numeric" maxlength="2" placeholder="Số" value="${info ? info.number : ''}" style="flex:1;">
+          </div>
+          <button class="btn btn-primary btn-block btn-sm" onclick="JerseyPage.savePrintInfo()">💾 Lưu Tên & Số Áo</button>
+          ${info ? `<p style="font-size:0.72rem; color:var(--text-muted); margin-top:6px;">Đã lưu lúc ${App.formatRelativeTime(info.updatedAt)} - vẫn sửa được cho đến khi Admin khoá.</p>` : ''}
+        `}
       </div>
     `;
   }
@@ -155,6 +218,10 @@ class JerseyPageController {
       return;
     }
     if (Store.hasVotedJersey(Auth.currentUser.id)) return;
+    if (Store.isJerseySelectionLocked()) {
+      App.showToast('Admin đã khoá bình chọn mẫu áo.', 'error');
+      return;
+    }
 
     this.noOrder = false;
     const idx = this.selected.indexOf(num);
@@ -207,6 +274,33 @@ class JerseyPageController {
     if (!confirm(`Mở lại cho ${player ? player.name : ''} chọn mẫu áo lần nữa?`)) return;
     Store.adminUnlockJerseyVote(playerId);
     App.showToast(`Đã mở lại cho ${player ? player.name : ''}.`, 'success');
+    this.render();
+  }
+
+  savePrintInfo() {
+    const player = Auth.getCurrentPlayer();
+    if (!player) return;
+    const nameInput = document.getElementById('jersey-print-name');
+    const numberInput = document.getElementById('jersey-print-number');
+    const result = Store.setJerseyPrintInfo(player.id, nameInput.value, numberInput.value);
+    if (!result.ok) {
+      App.showToast(result.error, 'error');
+      return;
+    }
+    if (window.TelegramNotify) TelegramNotify.notifyJerseyPrintInfo(player.name, nameInput.value.trim().toUpperCase(), numberInput.value.trim());
+    App.showToast('Đã lưu tên & số áo! 🖨️', 'success');
+    this.render();
+  }
+
+  toggleGlobalLock() {
+    if (!Auth.isAdmin()) return;
+    const locked = Store.isJerseySelectionLocked();
+    const msg = locked
+      ? 'Mở khoá lại cho mọi người chọn mẫu áo & điền tên số?'
+      : 'Khoá bình chọn mẫu áo & tên số áo cho TẤT CẢ mọi người? (dùng khi chuẩn bị chốt đơn đặt hàng)';
+    if (!confirm(msg)) return;
+    Store.setJerseySelectionLocked(!locked);
+    App.showToast(locked ? 'Đã mở khoá lại.' : 'Đã khoá bình chọn mẫu áo.', 'success');
     this.render();
   }
 }

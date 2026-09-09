@@ -25,6 +25,11 @@ class TelegramNotifyEngine {
     this.send(`👕 ${playerName} đã chốt: ${choice}`);
   }
 
+  notifyJerseyPrintInfo(playerName, printName, number) {
+    if (!this.isConfigured()) return;
+    this.send(`🖨️ ${playerName} đã điền in áo: Tên "${printName}" - Số ${number}`);
+  }
+
   // Builds and sends a text summary of a closed 4-session cycle ("1 tháng" =
   // 4 buổi đá thực tế, not a calendar month) - top scorers and any weeks the
   // admin marked as skipped within those dates. No team standings (teams
