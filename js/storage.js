@@ -582,7 +582,7 @@ class DataStore {
     if (this.isJerseySelectionLocked()) {
       return { ok: false, error: 'Admin đã khoá, không thể điền/sửa tên số áo nữa.' };
     }
-    const cleanName = String(name || '').trim().toUpperCase().slice(0, 20);
+    const cleanName = String(name || '').trim().slice(0, 20);
     const cleanNumber = String(number || '').trim();
     if (!cleanName) {
       return { ok: false, error: 'Nhập tên in trên áo.' };

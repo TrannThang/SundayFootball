@@ -287,7 +287,7 @@ class JerseyPageController {
       App.showToast(result.error, 'error');
       return;
     }
-    if (window.TelegramNotify) TelegramNotify.notifyJerseyPrintInfo(player.name, nameInput.value.trim().toUpperCase(), numberInput.value.trim());
+    if (window.TelegramNotify) TelegramNotify.notifyJerseyPrintInfo(player.name, nameInput.value.trim(), numberInput.value.trim());
     App.showToast('Đã lưu tên & số áo! 🖨️', 'success');
     this.render();
   }
