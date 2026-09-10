@@ -25,9 +25,9 @@ class TelegramNotifyEngine {
     this.send(`👕 ${playerName} đã chốt: ${choice}`);
   }
 
-  notifyJerseyPrintInfo(playerName, printName, number) {
+  notifyJerseyPrintInfo(playerName, printName, number, size) {
     if (!this.isConfigured()) return;
-    this.send(`🖨️ ${playerName} đã điền in áo: Tên "${printName}" - Số ${number}`);
+    this.send(`🖨️ ${playerName} đã điền in áo: Tên "${printName}" - Số ${number} - Size ${size}`);
   }
 
   // Builds and sends a text summary of a closed 4-session cycle ("1 tháng" =

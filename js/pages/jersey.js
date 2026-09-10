@@ -94,7 +94,7 @@ class JerseyPageController {
                 const v = votes[String(p.id)];
                 const label = v.noOrder ? 'Không đặt áo' : `Mẫu ${v.picks.join(', ')}`;
                 const print = Store.getJerseyPrintInfo(p.id);
-                const printLabel = print ? ` • "${print.name}" #${print.number}` : '';
+                const printLabel = print ? ` • "${print.name}" #${print.number} ${print.size || ''}` : '';
                 return `<option value="${p.id}">${p.name} - ${label}${printLabel}</option>`;
               }).join('')}
             </select>
@@ -138,8 +138,8 @@ class JerseyPageController {
   }
 
   // Only relevant once someone has actually ordered a jersey (voted and not
-  // "no order") - lets them type the name/number to print, editable until
-  // the admin's global lock closes it.
+  // "no order") - lets them type the name/number/size to print, editable
+  // until the admin's global lock closes it.
   renderPrintInfoSection(player) {
     const vote = Store.getJerseyVoteFor(player.id);
     if (!vote || vote.noOrder) return '';
@@ -150,7 +150,7 @@ class JerseyPageController {
     if (locked && !info) {
       return `
         <div class="card" style="margin-top:14px; text-align:center; color:var(--text-muted);">
-          Admin đã khoá, bạn không kịp điền tên/số áo cho đợt này.
+          Admin đã khoá, bạn không kịp điền tên/số/size áo cho đợt này.
         </div>
       `;
     }
@@ -159,16 +159,23 @@ class JerseyPageController {
       <div class="card" style="margin-top:14px;">
         <div class="card-title" style="margin-bottom:8px;">
           <span class="card-title-icon">🖨️</span>
-          <span>Tên & Số In Trên Áo</span>
+          <span>Tên, Số & Size In Áo</span>
         </div>
         ${locked ? `
-          <div style="font-size:0.9rem; font-weight:700;">Đã lưu: <span style="color:var(--accent-emerald);">"${info.name}" - Số ${info.number}</span></div>
+          <div style="font-size:0.9rem; font-weight:700;">Đã lưu: <span style="color:var(--accent-emerald);">"${info.name}" - Số ${info.number} - Size ${info.size || '?'}</span></div>
         ` : `
           <div style="display:flex; gap:8px; margin-bottom:8px;">
-            <input id="jersey-print-name" class="form-input" type="text" maxlength="20" placeholder="Tên in (VD: THẮNG)" value="${info ? info.name : ''}" style="flex:2;">
+            <input id="jersey-print-name" class="form-input" type="text" maxlength="20" placeholder="Tên in (VD: Thắng)" value="${info ? info.name : ''}" style="flex:2;">
             <input id="jersey-print-number" class="form-input" type="text" inputmode="numeric" maxlength="2" placeholder="Số" value="${info ? info.number : ''}" style="flex:1;">
           </div>
-          <button class="btn btn-primary btn-block btn-sm" onclick="JerseyPage.savePrintInfo()">💾 Lưu Tên & Số Áo</button>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:0.82rem; color:var(--text-secondary);">Size áo:</span>
+            <select id="jersey-print-size" class="form-select" style="flex:1;">
+              <option value="">-- Chọn size --</option>
+              ${Store.getJerseySizes().map(s => `<option value="${s}" ${info && info.size === s ? 'selected' : ''}>${s}</option>`).join('')}
+            </select>
+          </div>
+          <button class="btn btn-primary btn-block btn-sm" onclick="JerseyPage.savePrintInfo()">💾 Lưu Tên, Số & Size</button>
           ${info ? `<p style="font-size:0.72rem; color:var(--text-muted); margin-top:6px;">Đã lưu lúc ${App.formatRelativeTime(info.updatedAt)} - vẫn sửa được cho đến khi Admin khoá.</p>` : ''}
         `}
       </div>
@@ -282,13 +289,14 @@ class JerseyPageController {
     if (!player) return;
     const nameInput = document.getElementById('jersey-print-name');
     const numberInput = document.getElementById('jersey-print-number');
-    const result = Store.setJerseyPrintInfo(player.id, nameInput.value, numberInput.value);
+    const sizeInput = document.getElementById('jersey-print-size');
+    const result = Store.setJerseyPrintInfo(player.id, nameInput.value, numberInput.value, sizeInput.value);
     if (!result.ok) {
       App.showToast(result.error, 'error');
       return;
     }
-    if (window.TelegramNotify) TelegramNotify.notifyJerseyPrintInfo(player.name, nameInput.value.trim(), numberInput.value.trim());
-    App.showToast('Đã lưu tên & số áo! 🖨️', 'success');
+    if (window.TelegramNotify) TelegramNotify.notifyJerseyPrintInfo(player.name, nameInput.value.trim(), numberInput.value.trim(), sizeInput.value.trim().toUpperCase());
+    App.showToast('Đã lưu tên, số & size áo! 🖨️', 'success');
     this.render();
   }
 

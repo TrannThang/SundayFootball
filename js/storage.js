@@ -22,6 +22,8 @@ const JERSEY_CATALOG = [
   { num: 12, label: 'UTRON - Navy Đen', img: 'img/jerseys/12.jpg' }
 ];
 
+const JERSEY_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
+
 // 21 Official Real Members Roster with Sân 5 (Futsal) Positions
 const DEFAULT_PLAYERS = [
   { id: 1, name: 'Trần Thắng', fullName: 'Trần Thắng', pos: 'PIV', ovr: 74, teamId: 1, pin: '7634', stats: { pac: 78, sho: 85, pas: 60, dri: 72, def: 38, phy: 70 }, attendance: 'going', goals: 5, assists: 2, streak: 3 },
@@ -578,24 +580,32 @@ class DataStore {
     return (this.data.jerseyPrintInfo || {})[String(playerId)] || null;
   }
 
-  setJerseyPrintInfo(playerId, name, number) {
+  setJerseyPrintInfo(playerId, name, number, size) {
     if (this.isJerseySelectionLocked()) {
-      return { ok: false, error: 'Admin đã khoá, không thể điền/sửa tên số áo nữa.' };
+      return { ok: false, error: 'Admin đã khoá, không thể điền/sửa tên số size áo nữa.' };
     }
     const cleanName = String(name || '').trim().slice(0, 20);
     const cleanNumber = String(number || '').trim();
+    const cleanSize = String(size || '').trim().toUpperCase();
     if (!cleanName) {
       return { ok: false, error: 'Nhập tên in trên áo.' };
     }
     if (!/^\d{1,2}$/.test(cleanNumber) || Number(cleanNumber) > 99) {
       return { ok: false, error: 'Số áo phải là số từ 0 đến 99.' };
     }
+    if (!JERSEY_SIZES.includes(cleanSize)) {
+      return { ok: false, error: 'Chọn size áo.' };
+    }
     const key = String(playerId);
     if (!this.data.jerseyPrintInfo) this.data.jerseyPrintInfo = {};
-    this.data.jerseyPrintInfo[key] = { name: cleanName, number: cleanNumber, updatedAt: new Date().toISOString() };
+    this.data.jerseyPrintInfo[key] = { name: cleanName, number: cleanNumber, size: cleanSize, updatedAt: new Date().toISOString() };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
     if (window.CloudSync) CloudSync.pushFieldUpdate(`jerseyPrintInfo/${key}`, this.data.jerseyPrintInfo[key]);
     return { ok: true };
+  }
+
+  getJerseySizes() {
+    return JERSEY_SIZES;
   }
 
   // Deletes every match tagged with dateStr in one shot (admin correction tool,
