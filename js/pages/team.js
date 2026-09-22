@@ -466,6 +466,11 @@ class TeamPageController {
     document.getElementById('match-start-time').value = match.startTime || '';
     document.getElementById('match-end-time').value = match.endTime || '';
 
+    const homeAvatar = document.getElementById('match-home-avatar');
+    const awayAvatar = document.getElementById('match-away-avatar');
+    if (homeAvatar) { homeAvatar.textContent = match.homeTeam; homeAvatar.style.background = info[match.homeTeam].color; }
+    if (awayAvatar) { awayAvatar.textContent = match.awayTeam; awayAvatar.style.background = info[match.awayTeam].color; }
+
     // Render scorers
     const scorersContainer = document.getElementById('match-scorers-container');
     scorersContainer.innerHTML = '';
@@ -491,9 +496,10 @@ class TeamPageController {
     if (!container) return;
 
     const div = document.createElement('div');
-    div.style.cssText = 'display:flex; gap:8px; align-items:center;';
+    div.className = 'match-scorer-row';
     div.innerHTML = `
-      <select class="form-select scorer-name-select" style="flex:2;">
+      <span class="match-scorer-icon">⚽</span>
+      <select class="form-select scorer-name-select" style="flex:1;">
         <option value="">-- Ai ghi bàn --</option>
         ${Store.getPlayers().map(p => `<option value="${p.name}" ${p.name === name ? 'selected' : ''}>${p.name} (${p.pos})</option>`).join('')}
       </select>

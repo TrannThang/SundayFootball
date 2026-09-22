@@ -230,41 +230,43 @@
       </div>
       <form id="match-score-form" onsubmit="TeamPage.saveMatchResult(event)">
         <input type="hidden" id="match-index-input">
-        <div class="form-group">
-          <label class="form-label" id="match-teams-label">Đội 1 vs Đội 2</label>
-          <div style="display:flex; gap:12px; align-items:center; margin-top:8px;">
-            <div style="flex:1;">
-              <span id="match-home-name" style="font-weight:700;">Đội 1</span>
-              <input type="number" id="match-home-score" class="form-input" min="0" value="0" required style="margin-top:4px; font-size:1.2rem; text-align:center;">
-            </div>
-            <span style="font-weight:800; font-size:1.2rem;">-</span>
-            <div style="flex:1;">
-              <span id="match-away-name" style="font-weight:700;">Đội 2</span>
-              <input type="number" id="match-away-score" class="form-input" min="0" value="0" required style="margin-top:4px; font-size:1.2rem; text-align:center;">
-            </div>
+        <div id="match-teams-label" class="section-badge" style="margin-bottom:10px;">Đội 1 vs Đội 2</div>
+
+        <!-- Scoreboard hero: circular team badge (colored by team) + big score digits + VS pill -->
+        <div class="match-score-hero">
+          <div class="match-score-team">
+            <div class="match-team-avatar" id="match-home-avatar">1</div>
+            <span id="match-home-name" class="match-team-name">Đội 1</span>
+            <input type="number" id="match-home-score" class="match-score-input" min="0" value="0" required>
+          </div>
+          <div class="match-score-vs">VS</div>
+          <div class="match-score-team">
+            <div class="match-team-avatar" id="match-away-avatar">2</div>
+            <span id="match-away-name" class="match-team-name">Đội 2</span>
+            <input type="number" id="match-away-score" class="match-score-input" min="0" value="0" required>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Thời gian đá (khung 18h00 - 19h30, tối đa 10 phút/trận):</label>
+          <label class="form-label">⏰ Thời gian đá (khung 18h00 - 19h30, tối đa 10 phút/trận)</label>
           <div style="display:flex; gap:10px; align-items:center; margin-top:6px;">
             <input type="time" id="match-start-time" class="form-input" style="flex:1;">
-            <span style="font-weight:800;">-</span>
+            <span style="font-weight:800; color:var(--text-muted);">–</span>
             <input type="time" id="match-end-time" class="form-input" style="flex:1;">
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Cầu thủ ghi bàn (tùy chọn):</label>
+          <label class="form-label">⚽ Cầu thủ ghi bàn (tùy chọn)</label>
           <div id="match-scorers-container" style="display:flex; flex-direction:column; gap:8px;">
             <!-- Dynamic scorer rows -->
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="TeamPage.addScorerRow()" style="margin-top:8px;">+ Thêm bàn thắng</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-block" onclick="TeamPage.addScorerRow()" style="margin-top:8px;">+ Thêm bàn thắng</button>
         </div>
 
         <div style="display:flex; gap:10px; margin-top:20px;">
           <button type="button" class="btn btn-secondary" style="flex:1;" onclick="App.closeModal('match-modal')">Hủy</button>
-          <button type="submit" class="btn btn-primary" style="flex:1;">Lưu kết quả</button>
+          <button type="submit" class="btn btn-primary" style="flex:1;">💾 Lưu kết quả</button>
         </div>
       </form>
     </div>
@@ -378,28 +380,28 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
-  <script src="js/firebase-config.js?v=4.5"></script>
+  <script src="js/firebase-config.js?v=4.6"></script>
 
   <!-- Telegram (optional vote notifications) -->
-  <script src="js/telegram-config.js?v=4.5"></script>
-  <script src="js/telegram-notify.js?v=4.5"></script>
+  <script src="js/telegram-config.js?v=4.6"></script>
+  <script src="js/telegram-notify.js?v=4.6"></script>
 
   <!-- Push Notifications (optional, needs js/push-config.js VAPID key) -->
-  <script src="js/push-config.js?v=4.5"></script>
-  <script src="js/push-notify.js?v=4.5"></script>
-  <script src="js/notify-inbox.js?v=4.5"></script>
+  <script src="js/push-config.js?v=4.6"></script>
+  <script src="js/push-notify.js?v=4.6"></script>
+  <script src="js/notify-inbox.js?v=4.6"></script>
 
   <!-- JavaScript Modules -->
-  <script src="js/theme.js?v=4.5"></script>
-  <script src="js/cloud-sync.js?v=4.5"></script>
-  <script src="js/storage.js?v=4.5"></script>
-  <script src="js/auth.js?v=4.5"></script>
-  <script src="js/app.js?v=4.5"></script>
-  <script src="js/pages/home.js?v=4.5"></script>
-  <script src="js/pages/team.js?v=4.5"></script>
-  <script src="js/pages/squad.js?v=4.5"></script>
-  <script src="js/pages/ranking.js?v=4.5"></script>
-  <script src="js/pages/jersey.js?v=4.5"></script>
-  <script src="js/pages/player-detail.js?v=4.5"></script>
+  <script src="js/theme.js?v=4.6"></script>
+  <script src="js/cloud-sync.js?v=4.6"></script>
+  <script src="js/storage.js?v=4.6"></script>
+  <script src="js/auth.js?v=4.6"></script>
+  <script src="js/app.js?v=4.6"></script>
+  <script src="js/pages/home.js?v=4.6"></script>
+  <script src="js/pages/team.js?v=4.6"></script>
+  <script src="js/pages/squad.js?v=4.6"></script>
+  <script src="js/pages/ranking.js?v=4.6"></script>
+  <script src="js/pages/jersey.js?v=4.6"></script>
+  <script src="js/pages/player-detail.js?v=4.6"></script>
 </body>
 </html>
