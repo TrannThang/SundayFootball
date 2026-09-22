@@ -15,6 +15,8 @@ class RankingPageController {
     const topScorers = this.calculateTopScorers(matches, players);
 
     container.innerHTML = `
+      ${this.renderScorerHero(topScorers[0])}
+
       <!-- Golden Boot + Champions History sit side-by-side on desktop (see
            .ranking-grid), stacked on mobile. -->
       <div class="ranking-grid">
@@ -74,6 +76,20 @@ class RankingPageController {
             </div>
           `).join('')}
         </div>
+      </div>
+    `;
+  }
+
+  // Spotlight card for the current #1 scorer - the full ranked list below
+  // still shows everyone (including #1), this is just the "hero" moment.
+  renderScorerHero(leader) {
+    if (!leader) return '';
+    return `
+      <div class="card scorer-hero">
+        <div class="section-badge scorer-hero-badge">🏆 VUA PHÁ LƯỚI</div>
+        <div class="scorer-hero-trophy">🏆</div>
+        <div class="scorer-hero-name">${leader.name}</div>
+        <div class="scorer-hero-goals">${leader.matchGoals}<span>bàn thắng</span></div>
       </div>
     `;
   }

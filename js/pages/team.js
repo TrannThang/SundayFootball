@@ -6,6 +6,12 @@ class TeamPageController {
   constructor() {
     this.activeSubTab = 'upcoming'; // 'upcoming' or 'history'
     this.manualEditMode = false;
+    this.pitchVisible = { 1: false, 2: false, 3: false }; // per-team lineup pitch toggle, collapsed by default
+  }
+
+  togglePitchView(teamId) {
+    this.pitchVisible[teamId] = !this.pitchVisible[teamId];
+    this.render();
   }
 
   render() {
@@ -176,6 +182,14 @@ class TeamPageController {
           </div>
         </div>
 
+        ${teamList.length > 0 ? `
+          <button class="btn btn-outline btn-sm btn-block" style="margin-bottom:10px;" onclick="TeamPage.togglePitchView(${teamId})">
+            🎯 ${this.pitchVisible[teamId] ? 'Ẩn sơ đồ sân' : 'Xem sơ đồ sân'}
+          </button>
+        ` : ''}
+
+        ${this.pitchVisible[teamId] ? this.renderPitchBoard(teamList, colorHex) : ''}
+
         <div style="display:flex; flex-direction:column; gap:6px;">
           ${teamList.map(p => `
             <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
@@ -201,6 +215,34 @@ class TeamPageController {
             </div>
           `).join('')}
         </div>
+      </div>
+    `;
+  }
+
+  // Simple portrait pitch grouped by Sân 5 position zone (PIV attacking end
+  // down to GK at the back) - not fixed formation slots, since squad size
+  // varies per team; each player in a zone just wraps within that zone's row.
+  renderPitchBoard(teamList, colorHex) {
+    const byPos = { PIV: [], ALA: [], FIX: [], GK: [] };
+    teamList.forEach(p => { if (byPos[p.pos]) byPos[p.pos].push(p); });
+
+    const renderZone = (players) => players.length > 0
+      ? players.map(p => `
+          <div class="pitch-chip" onclick="PlayerDetail.show(${p.id})">
+            <div class="pitch-chip-avatar" style="background:${colorHex};">${p.name.charAt(0)}</div>
+            <span>${p.name}</span>
+          </div>
+        `).join('')
+      : '<span class="pitch-zone-empty">-</span>';
+
+    return `
+      <div class="pitch-board">
+        <div class="pitch-halfway-line"></div>
+        <div class="pitch-center-circle"></div>
+        <div class="pitch-zone-row">${renderZone(byPos.PIV)}</div>
+        <div class="pitch-zone-row">${renderZone(byPos.ALA)}</div>
+        <div class="pitch-zone-row">${renderZone(byPos.FIX)}</div>
+        <div class="pitch-zone-row">${renderZone(byPos.GK)}</div>
       </div>
     `;
   }
@@ -306,7 +348,6 @@ class TeamPageController {
 
   renderMatchCard(m, isAdmin) {
     const teamInfo = Store.getTeamInfo();
-    const teamNames = { 1: teamInfo[1].full, 2: teamInfo[2].full, 3: teamInfo[3].full };
 
     return `
       <div class="card" style="margin-bottom:0;">
@@ -322,17 +363,19 @@ class TeamPageController {
           ` : ''}
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.7); padding:14px; border-radius:10px;">
-          <div style="flex:1; text-align:center; font-weight:800; font-size:0.95rem;">
-            ${teamNames[m.homeTeam]}
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.7); padding:14px 10px; border-radius:10px; gap:6px;">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0;">
+            <div class="match-team-avatar match-team-avatar-sm" style="background:${teamInfo[m.homeTeam].color};">${m.homeTeam}</div>
+            <span style="font-weight:800; font-size:0.8rem; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${teamInfo[m.homeTeam].name}</span>
           </div>
 
-          <div style="font-size:1.6rem; font-weight:900; color:var(--accent-cyan); padding:0 16px;">
+          <div style="font-family:var(--font-display); font-size:1.6rem; font-weight:900; color:var(--accent-cyan); padding:0 10px; flex-shrink:0;">
             ${m.status === 'finished' ? `${m.homeScore} - ${m.awayScore}` : 'VS'}
           </div>
 
-          <div style="flex:1; text-align:center; font-weight:800; font-size:0.95rem;">
-            ${teamNames[m.awayTeam]}
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0;">
+            <div class="match-team-avatar match-team-avatar-sm" style="background:${teamInfo[m.awayTeam].color};">${m.awayTeam}</div>
+            <span style="font-weight:800; font-size:0.8rem; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${teamInfo[m.awayTeam].name}</span>
           </div>
         </div>
 
