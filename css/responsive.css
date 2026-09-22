@@ -564,6 +564,20 @@ div#page-home .card.attendance-action-card > div > div span {
   align-items: flex-start;
 }
 
+/* .app-shell being display:flex applies at every width, not just >=1024px
+   (only the sidebar itself is gated to that breakpoint) - so .app-container
+   is a flex item everywhere. Flex items default to min-width:auto, which
+   means they refuse to shrink below their CONTENT's intrinsic width. Any
+   page with a CSS grid (Squad's card grid, the horizontally-scrolling
+   filter tabs) has a wide intrinsic min-width, so without this reset the
+   whole app-container - and the viewport - got stretched to match it,
+   instead of the grid/tabs just wrapping or scrolling within themselves
+   as their own CSS already intends. This must stay unconditional (not just
+   inside the >=1024px block) since the overflow happens below 1024px too. */
+.app-container {
+  min-width: 0;
+}
+
 .sidebar-nav {
   display: none;
 }
