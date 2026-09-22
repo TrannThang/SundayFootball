@@ -70,7 +70,7 @@ class TelegramNotifyEngine {
       skipped.forEach(s => { text += `• ${s.date}: ${s.reason}\n`; });
     }
 
-    text += `\n📅 Tổng ${matches.length} trận trong chu kỳ này. Bảng Vua Phá Lưới trên web vẫn cộng dồn xuyên suốt mùa, không bị mất khi qua chu kỳ mới.`;
+    text += `\n📅 Tổng ${matches.length} trận trong chu kỳ này. Bảng Vua Phá Lưới trên web sẽ reset về 0 cho chu kỳ mới.`;
 
     this.send(text);
   }

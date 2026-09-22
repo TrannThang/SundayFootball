@@ -39,6 +39,8 @@ class RankingPageController {
         </div>
       </div>
 
+      ${this.renderChampionsHistory()}
+
       <!-- Match History List -->
       <div class="card" style="margin-top:14px;">
         <div class="card-title" style="margin-bottom:10px;">
@@ -67,11 +69,42 @@ class RankingPageController {
     `;
   }
 
+  // History of who won each closed cycle (see Store.closeCycle) - the board
+  // above resets to 0 every cycle, this is the permanent trophy record.
+  renderChampionsHistory() {
+    const champions = Store.getCycleChampions();
+    if (champions.length === 0) return '';
+    const fmt = iso => {
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}`;
+    };
+    return `
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title" style="margin-bottom:10px;">
+          <span class="card-title-icon">🏆</span>
+          <span>Nhà Vô Địch Các Chu Kỳ</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          ${champions.map(c => `
+            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:8px 12px; border-radius:8px;">
+              <div>
+                <span style="font-weight:800; font-size:0.85rem;">${c.name}</span>
+                <span style="font-size:0.7rem; color:var(--text-muted); margin-left:6px;">${fmt(c.rangeStart)} - ${fmt(c.rangeEnd)}</span>
+              </div>
+              <span style="font-weight:900; font-size:0.9rem; color:var(--accent-gold);">${c.goals} bàn</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   calculateTopScorers(matches, players) {
-    // Start from the cumulative archive (goals from matches that were purged
-    // from data.matches for decluttering/cycle-reset) then add whatever's
-    // still live - so Vua Phá Lưới never resets just because old match rows
-    // got cleaned up.
+    // Start from archivedGoals (goals from matches purged mid-cycle via the
+    // per-week "Xoá dữ liệu tuần này" declutter button) then add whatever's
+    // still live. archivedGoals itself gets wiped to {} on every cycle close
+    // (see Store.closeCycle) - so this board resets to 0 each new cycle
+    // instead of carrying goals across the whole season.
     const goalsByName = { ...Store.getArchivedGoals() };
     matches.forEach(m => {
       if (m.status === 'finished' && m.scorers) {

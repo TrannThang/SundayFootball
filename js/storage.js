@@ -192,6 +192,7 @@ class DataStore {
     parsed.pushTokens = DataStore.coerceKeyedObject(parsed.pushTokens);
     parsed.jerseyVotes = DataStore.coerceKeyedObject(parsed.jerseyVotes);
     parsed.jerseyPrintInfo = DataStore.coerceKeyedObject(parsed.jerseyPrintInfo);
+    parsed.cycleChampions = parsed.cycleChampions || [];
     parsed.jerseySelectionLocked = !!parsed.jerseySelectionLocked;
     parsed.notifications = parsed.notifications || [];
     parsed.notifyLastSeen = DataStore.coerceKeyedObject(parsed.notifyLastSeen);
@@ -217,7 +218,8 @@ class DataStore {
       notifyLastSeen: {},
       jerseyVotes: {},
       jerseyPrintInfo: {},
-      jerseySelectionLocked: false
+      jerseySelectionLocked: false,
+      cycleChampions: []
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     this.data = initial;
@@ -329,9 +331,9 @@ class DataStore {
     this.data.fund.matchSession = { fee: oldSession.fee, date: dateStr, paidIds: [], customFees: {} };
 
     // "1 tháng" = 4 buổi đá thực tế, không tính theo lịch (vì có tuần nghỉ mưa).
-    // Đủ 4 buổi thì chốt sổ: gửi tổng kết chu kỳ qua Telegram rồi dọn danh sách
-    // trận đấu của 4 buổi đó (chỉ để gọn "Lịch Sử" trên web) - bàn thắng được
-    // archive lại trước nên Vua Phá Lưới vẫn cộng dồn, không mất.
+    // Đủ 4 buổi thì chốt sổ chu kỳ (xem closeCycle()) - Vua Phá Lưới trên web
+    // reset về 0 cho chu kỳ mới, ai ghi nhiều bàn nhất trong 4 buổi đó được
+    // xướng tên trong báo cáo Telegram, không cộng dồn xuyên mùa nữa.
     // Tuần bị đánh dấu "nghỉ" vẫn được ghi vào matchDates (để còn báo cáo lại
     // trong 🌧 Tuần nghỉ khi chốt chu kỳ) nhưng KHÔNG tính vào weekCount - nghỉ
     // không phải là 1 buổi đá thực tế, chỉ buổi có đá thật mới được tính.
@@ -341,14 +343,44 @@ class DataStore {
     if (!wasSkipped) this.data.period.weekCount++;
 
     if (this.data.period.weekCount >= 4) {
-      const cycleDates = this.data.period.matchDates;
-      if (window.TelegramNotify) TelegramNotify.sendCycleArchive(cycleDates, this.data);
-      this.archiveGoalsFromMatches(this.data.matches.filter(m => cycleDates.includes(m.matchDate)));
-      this.data.matches = this.data.matches.filter(m => !cycleDates.includes(m.matchDate));
-      this.data.period = { weekCount: 0, matchDates: [] };
+      this.closeCycle(this.data.period.matchDates);
     }
 
     this.save();
+  }
+
+  // Closes out a cycle: sends the Telegram "who won this cycle" summary,
+  // records that cycle's champion into history, clears the raw match rows,
+  // and resets Vua Phá Lưới back to 0 - the board reflects ONE cycle (4 real
+  // match days) at a time, not the whole season, so a new champion can
+  // emerge every cycle.
+  closeCycle(cycleDates) {
+    if (window.TelegramNotify) TelegramNotify.sendCycleArchive(cycleDates, this.data);
+
+    const cycleMatches = (this.data.matches || []).filter(m => m.status === 'finished' && cycleDates.includes(m.matchDate));
+    const goalsByName = {};
+    cycleMatches.forEach(m => (m.scorers || []).forEach(s => {
+      const key = s.name.toLowerCase();
+      goalsByName[key] = (goalsByName[key] || 0) + (s.goals || 1);
+    }));
+    const topEntry = Object.entries(goalsByName).sort((a, b) => b[1] - a[1])[0];
+    if (topEntry) {
+      const [nameKey, goals] = topEntry;
+      const player = this.data.players.find(p => p.name.toLowerCase() === nameKey);
+      if (!this.data.cycleChampions) this.data.cycleChampions = [];
+      this.data.cycleChampions.unshift({
+        name: player ? player.name : nameKey,
+        goals,
+        rangeStart: cycleDates[0],
+        rangeEnd: cycleDates[cycleDates.length - 1],
+        closedAt: new Date().toISOString()
+      });
+      this.data.cycleChampions = this.data.cycleChampions.slice(0, 50); // cap growth
+    }
+
+    this.data.matches = this.data.matches.filter(m => !cycleDates.includes(m.matchDate));
+    this.data.archivedGoals = {}; // full reset, not folded forward
+    this.data.period = { weekCount: 0, matchDates: [] };
   }
 
   savePlayer(playerObj) {
@@ -418,6 +450,10 @@ class DataStore {
 
   getArchivedGoals() {
     return this.data.archivedGoals || {};
+  }
+
+  getCycleChampions() {
+    return this.data.cycleChampions || [];
   }
 
   getAuthEpoch() {
