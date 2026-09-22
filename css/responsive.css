@@ -356,8 +356,12 @@
 
 /* Desktop Adjustments */
 @media (min-width: 768px) {
+  /* .bottom-nav floats 20px off the bottom edge at this width (see below),
+     so the page needs that 20px PLUS its own height reserved - not just
+     20px total - otherwise the last bit of any long list renders underneath
+     the floating pill instead of above it. */
   body {
-    padding-bottom: 30px;
+    padding-bottom: calc(var(--bottom-nav-height) + 40px);
   }
 
   .main-header {
