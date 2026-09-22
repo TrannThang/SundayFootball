@@ -43,22 +43,27 @@ class HomePageController {
         </div>
       </div>
 
-      <!-- Quick Attendance Card -->
-      <div class="card attendance-action-card">
-        ${this.renderAttendanceSection(currentUser, currentPlayer)}
-      </div>
-
-      <!-- Notice Announcement Card -->
-      <div class="card">
-        <div class="card-header-flex">
-          <div class="card-title">
-            <span class="card-title-icon">📢</span>
-            <span>Thông Báo BHL</span>
-          </div>
-          ${Auth.isAdmin() ? `<button class="btn btn-outline btn-sm" onclick="HomePage.editNotice()">✏️ Sửa</button>` : ''}
+      <!-- Attendance + Notice sit side-by-side on desktop (see .home-grid),
+           stacked on mobile - both are equally "glanceable" info, not a
+           strict priority order between them. -->
+      <div class="home-grid">
+        <!-- Quick Attendance Card -->
+        <div class="card attendance-action-card">
+          ${this.renderAttendanceSection(currentUser, currentPlayer)}
         </div>
-        <div style="background:rgba(var(--bg-dark-rgb), 0.6); padding:12px 14px; border-radius:var(--radius-sm); border-left:3px solid var(--accent-cyan); font-size:0.88rem; line-height:1.6;" id="notice-text-content">
-          ${noticeText}
+
+        <!-- Notice Announcement Card -->
+        <div class="card">
+          <div class="card-header-flex">
+            <div class="card-title">
+              <span class="card-title-icon">📢</span>
+              <span>Thông Báo BHL</span>
+            </div>
+            ${Auth.isAdmin() ? `<button class="btn btn-outline btn-sm" onclick="HomePage.editNotice()">✏️ Sửa</button>` : ''}
+          </div>
+          <div style="background:rgba(var(--bg-dark-rgb), 0.6); padding:12px 14px; border-radius:var(--radius-sm); border-left:3px solid var(--accent-cyan); font-size:0.88rem; line-height:1.6;" id="notice-text-content">
+            ${noticeText}
+          </div>
         </div>
       </div>
 

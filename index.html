@@ -38,6 +38,39 @@
 </head>
 <body>
 
+  <div class="app-shell">
+    <!-- Desktop-only sidebar (>=1024px) - mirrors the bottom-nav buttons
+         below; both stay in sync since js/app.js targets ".nav-item"
+         globally, not just inside .bottom-nav. -->
+    <nav class="sidebar-nav">
+      <div class="sidebar-brand">
+        <div class="brand-logo-wrapper">
+          <span class="brand-logo-icon">⚽</span>
+        </div>
+        <div class="sidebar-brand-title">Sunday Football</div>
+      </div>
+      <button class="nav-item active" data-page="home">
+        <span class="nav-icon">🏠</span>
+        <span>Trang chủ</span>
+      </button>
+      <button class="nav-item" data-page="team">
+        <span class="nav-icon">🎽</span>
+        <span>Chia đội</span>
+      </button>
+      <button class="nav-item" data-page="squad">
+        <span class="nav-icon">🏃</span>
+        <span>Đội hình</span>
+      </button>
+      <button class="nav-item" data-page="ranking">
+        <span class="nav-icon">🏆</span>
+        <span>BXH</span>
+      </button>
+      <button class="nav-item" data-page="jersey">
+        <span class="nav-icon">👕</span>
+        <span>Mẫu áo</span>
+      </button>
+    </nav>
+
   <div class="app-container">
     <!-- Main Sticky Header -->
     <header class="main-header">
@@ -138,7 +171,8 @@
         <span>Mẫu áo</span>
       </button>
     </nav>
-  </div>
+    </div> <!-- /.app-container -->
+  </div> <!-- /.app-shell -->
 
   <!-- ===================================================================
        MODAL 1: AUTH & PIN LOGIN MODAL
@@ -344,28 +378,28 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
-  <script src="js/firebase-config.js?v=4.0"></script>
+  <script src="js/firebase-config.js?v=4.1"></script>
 
   <!-- Telegram (optional vote notifications) -->
-  <script src="js/telegram-config.js?v=4.0"></script>
-  <script src="js/telegram-notify.js?v=4.0"></script>
+  <script src="js/telegram-config.js?v=4.1"></script>
+  <script src="js/telegram-notify.js?v=4.1"></script>
 
   <!-- Push Notifications (optional, needs js/push-config.js VAPID key) -->
-  <script src="js/push-config.js?v=4.0"></script>
-  <script src="js/push-notify.js?v=4.0"></script>
-  <script src="js/notify-inbox.js?v=4.0"></script>
+  <script src="js/push-config.js?v=4.1"></script>
+  <script src="js/push-notify.js?v=4.1"></script>
+  <script src="js/notify-inbox.js?v=4.1"></script>
 
   <!-- JavaScript Modules -->
-  <script src="js/theme.js?v=4.0"></script>
-  <script src="js/cloud-sync.js?v=4.0"></script>
-  <script src="js/storage.js?v=4.0"></script>
-  <script src="js/auth.js?v=4.0"></script>
-  <script src="js/app.js?v=4.0"></script>
-  <script src="js/pages/home.js?v=4.0"></script>
-  <script src="js/pages/team.js?v=4.0"></script>
-  <script src="js/pages/squad.js?v=4.0"></script>
-  <script src="js/pages/ranking.js?v=4.0"></script>
-  <script src="js/pages/jersey.js?v=4.0"></script>
-  <script src="js/pages/player-detail.js?v=4.0"></script>
+  <script src="js/theme.js?v=4.1"></script>
+  <script src="js/cloud-sync.js?v=4.1"></script>
+  <script src="js/storage.js?v=4.1"></script>
+  <script src="js/auth.js?v=4.1"></script>
+  <script src="js/app.js?v=4.1"></script>
+  <script src="js/pages/home.js?v=4.1"></script>
+  <script src="js/pages/team.js?v=4.1"></script>
+  <script src="js/pages/squad.js?v=4.1"></script>
+  <script src="js/pages/ranking.js?v=4.1"></script>
+  <script src="js/pages/jersey.js?v=4.1"></script>
+  <script src="js/pages/player-detail.js?v=4.1"></script>
 </body>
 </html>

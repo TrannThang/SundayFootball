@@ -15,31 +15,35 @@ class RankingPageController {
     const topScorers = this.calculateTopScorers(matches, players);
 
     container.innerHTML = `
-      <!-- Golden Boot Section -->
-      <div class="card">
-        <div class="card-header-flex">
-          <div class="card-title">
-            <span class="card-title-icon">⚽</span>
-            <span>Vua Phá Lưới</span>
-          </div>
-          <span style="font-size:0.72rem; color:var(--accent-gold); font-weight:800;">TOP GOALS</span>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          ${topScorers.length > 0 ? topScorers.map((p, idx) => `
-            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-weight:900; font-size:0.85rem; color:var(--accent-gold); width:18px;">#${idx + 1}</span>
-                <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
-                <span class="team-badge team-badge-${p.teamId}" style="font-size:0.65rem;">Đội ${p.teamId}</span>
-              </div>
-              <span style="font-weight:900; font-size:0.95rem; color:var(--accent-cyan);">${p.matchGoals} bàn</span>
+      <!-- Golden Boot + Champions History sit side-by-side on desktop (see
+           .ranking-grid), stacked on mobile. -->
+      <div class="ranking-grid">
+        <!-- Golden Boot Section -->
+        <div class="card">
+          <div class="card-header-flex">
+            <div class="card-title">
+              <span class="card-title-icon">⚽</span>
+              <span>Vua Phá Lưới</span>
             </div>
-          `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:10px;">Chưa có dữ liệu bàn thắng</div>'}
-        </div>
-      </div>
+            <span style="font-size:0.72rem; color:var(--accent-gold); font-weight:800;">TOP GOALS</span>
+          </div>
 
-      ${this.renderChampionsHistory()}
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            ${topScorers.length > 0 ? topScorers.map((p, idx) => `
+              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-weight:900; font-size:0.85rem; color:var(--accent-gold); width:18px;">#${idx + 1}</span>
+                  <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
+                  <span class="team-badge team-badge-${p.teamId}" style="font-size:0.65rem;">Đội ${p.teamId}</span>
+                </div>
+                <span style="font-weight:900; font-size:0.95rem; color:var(--accent-cyan);">${p.matchGoals} bàn</span>
+              </div>
+            `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:10px;">Chưa có dữ liệu bàn thắng</div>'}
+          </div>
+        </div>
+
+        ${this.renderChampionsHistory()}
+      </div>
 
       <!-- Match History List -->
       <div class="card" style="margin-top:14px;">
@@ -79,7 +83,7 @@ class RankingPageController {
       return `${d}/${m}`;
     };
     return `
-      <div class="card" style="margin-top:14px;">
+      <div class="card" style="margin-bottom:0;">
         <div class="card-title" style="margin-bottom:10px;">
           <span class="card-title-icon">🏆</span>
           <span>Nhà Vô Địch Các Chu Kỳ</span>

@@ -84,8 +84,10 @@ class TeamPageController {
         ` : ''}
       </div>
 
-      <!-- 3 Teams Section -->
-      <div style="display:flex; flex-direction:column; gap:14px;">
+      <!-- 3 Teams Section - stacked on mobile, side-by-side columns on
+           desktop (see .team-grid) instead of always stacking regardless
+           of viewport width. -->
+      <div class="team-grid">
         <!-- Team 1 Card (Orange) -->
         ${this.renderTeamCard(1, 'Đội 1 (Áo Cam 🟠)', team1, calcAvgOvr(team1), 'var(--team-1-color)', 'team-badge-1', isAdmin)}
 

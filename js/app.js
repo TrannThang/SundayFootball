@@ -15,7 +15,10 @@ class AppController {
   }
 
   setupNavigation() {
-    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+    // Targets both the mobile bottom-nav and the desktop sidebar-nav (see
+    // index.html) - they share the same .nav-item/data-page markup, so one
+    // click handler keeps both in sync regardless of which is visible.
+    const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
       item.addEventListener('click', (e) => {
         const targetPage = item.getAttribute('data-page');
@@ -27,8 +30,8 @@ class AppController {
   navigateTo(pageId) {
     this.currentPage = pageId;
 
-    // Update Bottom Nav UI
-    document.querySelectorAll('.bottom-nav .nav-item').forEach(item => {
+    // Update Nav UI (both bottom-nav and sidebar-nav)
+    document.querySelectorAll('.nav-item').forEach(item => {
       if (item.getAttribute('data-page') === pageId) {
         item.classList.add('active');
       } else {

@@ -365,22 +365,10 @@
   }
 }
 
-.card-title {
-  font-size: 12px;
-}
-
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   font-weight: 400;
   font-size: 14px;
-}
-
-.section-badge {
-  font-size: 10px;
-}
-
-.team-badge {
-  font-size: 12px;
 }
 
 .card.attendance-action-card h3 {
@@ -528,4 +516,150 @@ div#page-home .card.attendance-action-card > div > div span {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   DESKTOP SHELL - SIDEBAR NAVIGATION (>=1024px)
+   Below 1024px this is a no-op: .sidebar-nav stays hidden and .app-container
+   behaves exactly as before (centered column + bottom-nav). At 1024px+ the
+   bottom-nav is replaced by a persistent left sidebar and the content column
+   widens, so the app stops looking like a stretched-out phone layout.
+   ========================================================================== */
+.app-shell {
+  display: flex;
+  align-items: flex-start;
+}
+
+.sidebar-nav {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 232px;
+    flex-shrink: 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    padding: 20px 14px;
+    background: rgba(var(--bg-card-rgb), 0.5);
+    border-right: 1px solid var(--border-color);
+  }
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px 22px;
+  }
+
+  .sidebar-brand-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.05rem;
+    background: linear-gradient(90deg, #ffffff, #38bdf8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  [data-theme="light"] .sidebar-brand-title {
+    background: linear-gradient(90deg, #0f172a, #0284c7);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .sidebar-nav .nav-item {
+    flex: 0 0 auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    height: auto;
+    padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    gap: 12px;
+  }
+
+  .sidebar-nav .nav-item .nav-icon {
+    font-size: 1.1rem;
+  }
+
+  .sidebar-nav .nav-item.active {
+    background: rgba(6, 182, 212, 0.12);
+  }
+
+  .sidebar-nav .nav-item.active::after {
+    display: none;
+  }
+
+  .sidebar-nav .nav-item.active .nav-icon {
+    transform: none;
+  }
+
+  .bottom-nav {
+    display: none;
+  }
+
+  body {
+    padding-bottom: 24px;
+  }
+
+  .app-container {
+    max-width: none;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .main-header {
+    border-radius: 0;
+    margin-bottom: 0;
+  }
+
+  .page-view {
+    max-width: 1100px;
+  }
+}
+
+/* ==========================================================================
+   MULTI-COLUMN CONTENT GRIDS (>=1024px)
+   Mobile/tablet: plain stacked column (unchanged). Desktop: real side-by-side
+   layout instead of the same single centered column just stretched wider.
+   ========================================================================== */
+.home-grid,
+.team-grid,
+.ranking-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 1024px) {
+  .home-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .ranking-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .jersey-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
