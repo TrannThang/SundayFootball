@@ -20,23 +20,26 @@ class JerseyPageController {
     const results = Store.getJerseyResults();
 
     const locked = Store.isJerseySelectionLocked();
+    const finalDesign = Store.getFinalizedJerseyDesign();
 
     container.innerHTML = `
-      <div class="card">
-        <div class="card-title" style="margin-bottom:6px;">
-          <span class="card-title-icon">👕</span>
-          <span>Chọn Mẫu Áo Đội</span>
+      ${locked && finalDesign ? this.renderFinalizedBanner(finalDesign) : `
+        <div class="card">
+          <div class="card-title" style="margin-bottom:6px;">
+            <span class="card-title-icon">👕</span>
+            <span>Chọn Mẫu Áo Đội</span>
+          </div>
+          <p style="font-size:0.82rem; color:var(--text-secondary);">
+            Mỗi người được chọn tối đa <strong>2 mẫu</strong> trong 12 mẫu bên dưới, hoặc chọn "Không đặt áo" nếu không có nhu cầu. Chỉ chốt được <strong>1 lần</strong> - chọn kỹ trước khi bấm Chốt nhé!
+          </p>
         </div>
-        <p style="font-size:0.82rem; color:var(--text-secondary);">
-          Mỗi người được chọn tối đa <strong>2 mẫu</strong> trong 12 mẫu bên dưới, hoặc chọn "Không đặt áo" nếu không có nhu cầu. Chỉ chốt được <strong>1 lần</strong> - chọn kỹ trước khi bấm Chốt nhé!
-        </p>
-      </div>
 
-      ${locked ? `
-        <div class="card" style="margin-top:14px; background:rgba(244,63,94,0.08); border:1px solid rgba(244,63,94,0.3); text-align:center;">
-          <span style="font-weight:800; color:var(--accent-rose);">🔒 Admin đã khoá chọn mẫu áo & điền tên số - đang chốt đơn đặt hàng.</span>
-        </div>
-      ` : ''}
+        ${locked ? `
+          <div class="card" style="margin-top:14px; background:rgba(244,63,94,0.08); border:1px solid rgba(244,63,94,0.3); text-align:center;">
+            <span style="font-weight:800; color:var(--accent-rose);">🔒 Admin đã khoá chọn mẫu áo & điền tên số - đang chốt đơn đặt hàng.</span>
+          </div>
+        ` : ''}
+      `}
 
       ${Auth.isAdmin() ? this.renderAdminPanel() : ''}
       ${!Auth.isLoggedIn() ? this.renderLoginPrompt() : ''}
@@ -60,6 +63,21 @@ class JerseyPageController {
 
       <div class="jersey-grid">
         ${Store.getJerseyCatalog().map(j => this.renderGalleryCard(j)).join('')}
+      </div>
+    `;
+  }
+
+  // Shown instead of the voting instructions once Admin has locked selection -
+  // tells everyone plainly what the team is actually getting, since a
+  // player's own pick (see renderVotingSection) may differ from the design
+  // the team ended up ordering together.
+  renderFinalizedBanner(finalDesign) {
+    return `
+      <div class="card" style="text-align:center; background:linear-gradient(160deg, rgba(16,185,129,0.14), rgba(19,27,46,0.9)); border:2px solid var(--accent-emerald); padding:20px 16px;">
+        <div class="section-badge" style="background:rgba(16,185,129,0.15); color:var(--accent-emerald); border-color:rgba(16,185,129,0.35);">✅ ĐỘI ĐÃ CHỐT MẪU ÁO</div>
+        <img src="${finalDesign.img}" alt="${finalDesign.label}" style="width:100%; max-width:240px; aspect-ratio:1/1; object-fit:cover; border-radius:var(--radius-md); margin:14px auto; display:block; border:2px solid var(--accent-emerald); box-shadow:0 8px 24px rgba(16,185,129,0.25);">
+        <h2 style="font-size:1.15rem; font-weight:800;">Mẫu ${finalDesign.num} - ${finalDesign.label}</h2>
+        <p style="font-size:0.82rem; color:var(--text-secondary); margin-top:6px;">Cả đội đặt chung mẫu này cho đợt này. Xem lại tên/số/size bạn đã điền bên dưới nếu cần.</p>
       </div>
     `;
   }

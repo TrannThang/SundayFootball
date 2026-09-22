@@ -24,6 +24,12 @@ const JERSEY_CATALOG = [
 
 const JERSEY_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
 
+// The design the whole team actually ordered, once voting is done and Admin
+// has locked selection - shown as a "here's what we're getting" banner on
+// the Jersey page instead of everyone just seeing their own individual pick.
+// Update this number if a future season re-votes and finalizes a new design.
+const FINALIZED_JERSEY_NUM = 12;
+
 // Team identity (color + name variants) - single source of truth for what
 // used to be separately re-declared in team.js, squad.js, and player-detail.js.
 // `label`/`full` cover the two Telegram/UI phrasings team.js needs; `name` is
@@ -531,6 +537,13 @@ class DataStore {
 
   getJerseyCatalog() {
     return JERSEY_CATALOG;
+  }
+
+  // Returns the catalog entry the team actually ordered, or null if none is
+  // set. Only meant to be shown once selection is locked (see
+  // isJerseySelectionLocked) - that's the "we're placing this order" cutoff.
+  getFinalizedJerseyDesign() {
+    return JERSEY_CATALOG.find(j => j.num === FINALIZED_JERSEY_NUM) || null;
   }
 
   getTeamInfo() {

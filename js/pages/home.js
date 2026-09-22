@@ -69,7 +69,7 @@ class HomePageController {
             <span class="card-title-icon">🗓️</span>
             <span>Lịch 3 Trận Đá Luân Phiên</span>
           </div>
-          <span class="section-badge">Sân 7 người</span>
+          <span class="section-badge">Sân 5 · Tối đa 7 người/đội</span>
         </div>
 
         <div class="fixture-item">

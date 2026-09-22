@@ -349,14 +349,20 @@
    CUSTOM OVERRIDES - compact type scale + wrapping fixes for small screens
    ========================================================================== */
 
-header.main-header {
-  flex-direction: column;
-  align-items: start;
-}
+/* Below 481px the brand block + icon cluster don't fit on one row without
+   wrapping ugly, so stack them - at 481px+ the header's default flex row
+   (see .main-header in style.css) has enough room and should be used as-is,
+   instead of always stacking regardless of viewport width. */
+@media (max-width: 480px) {
+  header.main-header {
+    flex-direction: column;
+    align-items: start;
+  }
 
-header.main-header > div:last-child {
-  margin-left: auto;
-  margin-top: 10px;
+  header.main-header > div:last-child {
+    margin-left: auto;
+    margin-top: 10px;
+  }
 }
 
 .card-title {

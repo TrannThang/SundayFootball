@@ -313,9 +313,9 @@ class TeamPageController {
             ${m.status === 'finished' ? 'ĐÃ ĐÁ' : 'CHƯA CÓ TỶ SỐ'}${m.startTime && m.endTime ? ` • ⏰ ${m.startTime} - ${m.endTime}` : ''}
           </span>
           ${isAdmin ? `
-            <div style="display:flex; gap:6px;">
+            <div style="display:flex; align-items:center; gap:10px;">
               <button class="btn btn-outline btn-sm" onclick="TeamPage.openMatchModal(${m.id})">✏️ Nhập tỷ số</button>
-              <button class="btn btn-danger btn-sm" onclick="TeamPage.deleteMatch(${m.id})">🗑️</button>
+              <button class="btn btn-danger btn-sm" onclick="TeamPage.deleteMatch(${m.id})" style="border-left:1px solid rgba(244,63,94,0.35); padding-left:10px; margin-left:2px;">🗑️</button>
             </div>
           ` : ''}
         </div>
