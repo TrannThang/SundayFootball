@@ -27,7 +27,7 @@ class HomePageController {
             </div>
           ` : ''}
         </div>
-        <h2 style="font-size:1.2rem; font-weight:800; color:var(--text-primary); margin:4px 0;">${this.formatMatchDayLabel(nextMatch.date)}</h2>
+        <h2 style="font-size:1.6rem; font-weight:800; color:var(--text-primary); margin:6px 0 2px;">${this.formatMatchDayLabel(nextMatch.date)}</h2>
         <p style="font-size:0.85rem; color:var(--text-secondary);">⏰ ${nextMatch.time} • 📍 ${nextMatch.venue}</p>
 
         <!-- Countdown Timer -->

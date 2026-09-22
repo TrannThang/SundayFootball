@@ -29,16 +29,21 @@ class RankingPageController {
           </div>
 
           <div style="display:flex; flex-direction:column; gap:6px;">
-            ${topScorers.length > 0 ? topScorers.map((p, idx) => `
-              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(var(--bg-dark-rgb), 0.6); padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
+            ${topScorers.length > 0 ? topScorers.map((p, idx) => {
+              const isFirst = idx === 0;
+              const rowBg = isFirst ? 'linear-gradient(90deg, rgba(245,158,11,0.16), rgba(var(--bg-dark-rgb), 0.6))' : 'rgba(var(--bg-dark-rgb), 0.6)';
+              const rowBorder = isFirst ? 'border:1px solid rgba(245,158,11,0.35);' : '';
+              const rankLabel = isFirst ? '👑' : `#${idx + 1}`;
+              return `
+              <div style="display:flex; align-items:center; justify-content:space-between; background:${rowBg}; ${rowBorder} padding:8px 12px; border-radius:8px; cursor:pointer;" onclick="PlayerDetail.show(${p.id})">
                 <div style="display:flex; align-items:center; gap:8px;">
-                  <span style="font-weight:900; font-size:0.85rem; color:var(--accent-gold); width:18px;">#${idx + 1}</span>
+                  <span style="font-weight:900; font-size:0.9rem; color:var(--accent-gold); width:18px;">${rankLabel}</span>
                   <span style="font-weight:700; font-size:0.88rem;">${p.name}</span>
                   <span class="team-badge team-badge-${p.teamId}" style="font-size:0.65rem;">Đội ${p.teamId}</span>
                 </div>
                 <span style="font-weight:900; font-size:0.95rem; color:var(--accent-cyan);">${p.matchGoals} bàn</span>
               </div>
-            `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:10px;">Chưa có dữ liệu bàn thắng</div>'}
+            `; }).join('') : '<div style="text-align:center; color:var(--text-muted); padding:10px;">Chưa có dữ liệu bàn thắng</div>'}
           </div>
         </div>
 

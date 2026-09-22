@@ -56,13 +56,43 @@
   margin-bottom: 12px;
 }
 
-/* Home Page Countdown Banner */
+/* Home Page Countdown Banner - two soft radial "floodlight" glows in the
+   corners for a bit more of a "match day hero" feel, kept subtle and
+   clipped by the card's own overflow:hidden so they never spill onto
+   neighboring cards. */
 .countdown-box {
   background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(16, 185, 129, 0.08));
   border: 1px solid rgba(6, 182, 212, 0.3);
   border-radius: var(--radius-md);
-  padding: 16px;
+  padding: 18px 16px;
   text-align: center;
+}
+
+.countdown-box::before,
+.countdown-box::after {
+  content: '';
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.countdown-box::before {
+  top: -90px;
+  right: -70px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.3), transparent 70%);
+}
+
+.countdown-box::after {
+  bottom: -100px;
+  left: -60px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.18), transparent 70%);
+}
+
+.countdown-box > * {
+  position: relative;
+  z-index: 1;
 }
 
 .countdown-timer {
@@ -607,20 +637,23 @@ div#page-home .card.attendance-action-card > div > div span {
     padding-bottom: 24px;
   }
 
+  /* Cap+center the WHOLE column (header included) at one width, instead of
+     only capping .page-view - that mismatch is what left the header
+     stretched full-bleed while the cards below it hugged the left edge
+     with a big empty gap on wide monitors. flex-grow stays at its default
+     (0) here so the browser distributes the leftover space to the auto
+     margins instead of stretching the container to fill it. */
   .app-container {
-    max-width: none;
-    margin: 0;
-    flex: 1;
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
     min-width: 0;
   }
 
   .main-header {
     border-radius: 0;
     margin-bottom: 0;
-  }
-
-  .page-view {
-    max-width: 1100px;
   }
 }
 

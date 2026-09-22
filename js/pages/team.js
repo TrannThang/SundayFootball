@@ -165,7 +165,7 @@ class TeamPageController {
 
   renderTeamCard(teamId, title, teamList, avgOvr, colorHex, badgeClass, isAdmin) {
     return `
-      <div class="card" style="border-left: 4px solid ${colorHex}; margin-bottom:0;">
+      <div class="card" style="border-top: 3px solid ${colorHex}; margin-bottom:0; background:linear-gradient(180deg, color-mix(in srgb, ${colorHex} 10%, var(--bg-card)), var(--bg-card) 140px);">
         <div class="card-header-flex" style="margin-bottom:10px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <span class="team-badge ${badgeClass}" style="font-size:0.88rem; padding:4px 10px;">${title}</span>
