@@ -10,9 +10,8 @@ class PlayerDetailController {
     const container = document.getElementById('player-detail-content');
     if (!container) return;
 
-    const teamColors = { 1: '#f97316', 2: '#22c55e', 3: '#94a3b8' };
-    const teamNames = { 1: 'Đội 1', 2: 'Đội 2', 3: 'Đội 3' };
-    const teamColor = teamColors[p.teamId] || '#06b6d4';
+    const teamInfo = Store.getTeamInfo();
+    const teamColor = (teamInfo[p.teamId] && teamInfo[p.teamId].color) || '#06b6d4';
 
     const ranked = [...Store.getPlayers()].sort((a, b) => b.ovr - a.ovr);
     const rank = ranked.findIndex(x => x.id === p.id) + 1;
@@ -32,7 +31,7 @@ class PlayerDetailController {
           </div>
           <div style="text-align:right;">
             <span style="font-size:0.8rem; font-weight:800; color:${teamColor};">#${rank}</span>
-            <div style="font-size:0.68rem; color:${teamColor}; font-weight:700;">${teamNames[p.teamId] || ''}</div>
+            <div style="font-size:0.68rem; color:${teamColor}; font-weight:700;">${teamInfo[p.teamId] ? teamInfo[p.teamId].name : ''}</div>
           </div>
         </div>
 

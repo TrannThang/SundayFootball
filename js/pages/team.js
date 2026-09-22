@@ -227,7 +227,7 @@ class TeamPageController {
           <div class="card-header-flex" style="margin-bottom:${isAdmin ? '10px' : '0'};">
             <div>
               <span class="section-badge">BUỔI ĐÁ HIỆN TẠI</span>
-              <h3 style="font-size:1.05rem; font-weight:800; margin-top:4px;">${TeamPage.formatDate(matchDay.date)}</h3>
+              <h3 style="font-size:1.05rem; font-weight:800; margin-top:4px;">${App.formatDateVN(matchDay.date)}</h3>
               <p style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Đổi ngày này ở nút "🔄 Tuần Mới" trên Trang chủ</p>
             </div>
             ${isAdmin ? `<button class="btn btn-outline btn-sm" onclick="TeamPage.sendWeeklyReportNow()">📤 Gửi Telegram</button>` : ''}
@@ -245,7 +245,8 @@ class TeamPageController {
             </div>
           ` : isAdmin ? (() => {
             const predicted = this.predictNextTeams();
-            const teamLabels = { 1: 'Đội 1 (Cam)', 2: 'Đội 2 (Xanh Lá)', 3: 'Đội 3 (Thường)' };
+            const teamInfo = Store.getTeamInfo();
+            const teamLabels = { 1: teamInfo[1].label, 2: teamInfo[2].label, 3: teamInfo[3].label };
             return `
             <div style="display:flex; gap:8px; align-items:center;">
               <select id="new-match-home" class="form-select" style="flex:1;">
@@ -281,7 +282,7 @@ class TeamPageController {
           <div>
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
               <div style="font-size:0.78rem; font-weight:800; color:var(--text-muted); padding-left:2px;">
-                📅 ${TeamPage.formatDate(dateKey)} ${dateKey === matchDay.date ? '(hiện tại)' : ''}
+                📅 ${App.formatDateVN(dateKey)} ${dateKey === matchDay.date ? '(hiện tại)' : ''}
               </div>
               ${isAdmin && dayMatches.length > 0 ? `<button class="btn btn-danger btn-sm" onclick="TeamPage.deleteWeekData('${dateKey}')">🗑️ Xoá dữ liệu tuần này</button>` : ''}
             </div>
@@ -302,7 +303,8 @@ class TeamPageController {
   }
 
   renderMatchCard(m, isAdmin) {
-    const teamNames = { 1: 'Đội 1 (Cam 🟠)', 2: 'Đội 2 (Xanh Lá 🟢)', 3: 'Đội 3 (Thường ⚪)' };
+    const teamInfo = Store.getTeamInfo();
+    const teamNames = { 1: teamInfo[1].full, 2: teamInfo[2].full, 3: teamInfo[3].full };
 
     return `
       <div class="card" style="margin-bottom:0;">
@@ -339,12 +341,6 @@ class TeamPageController {
         ` : ''}
       </div>
     `;
-  }
-
-  formatDate(isoDate) {
-    if (!isoDate) return '';
-    const [y, m, d] = isoDate.split('-');
-    return `${d}/${m}/${y}`;
   }
 
   // Predicts the next matchup from the real "thắng ở lại, hòa đội lâu hơn ra"
@@ -402,7 +398,7 @@ class TeamPageController {
   }
 
   deleteWeekData(dateStr) {
-    if (!confirm(`Xoá danh sách trận đấu của tuần ${this.formatDate(dateStr)} để gọn UI? Bàn thắng vẫn được cộng dồn vào Vua Phá Lưới. Không thể hoàn tác.`)) return;
+    if (!confirm(`Xoá danh sách trận đấu của tuần ${App.formatDateVN(dateStr)} để gọn UI? Bàn thắng vẫn được cộng dồn vào Vua Phá Lưới. Không thể hoàn tác.`)) return;
     Store.deleteMatchesForDate(dateStr);
     App.showToast('Đã xoá dữ liệu tuần đó.', 'info');
     this.render();
@@ -456,7 +452,8 @@ class TeamPageController {
     const match = Store.getMatches().find(m => m.id === matchId);
     if (!match) return;
 
-    const teamNames = { 1: 'Đội 1 (Cam)', 2: 'Đội 2 (Xanh Lá)', 3: 'Đội 3 (Thường)' };
+    const info = Store.getTeamInfo();
+    const teamNames = { 1: info[1].label, 2: info[2].label, 3: info[3].label };
 
     document.getElementById('match-index-input').value = match.id;
     document.getElementById('match-teams-label').textContent = `${teamNames[match.homeTeam]} vs ${teamNames[match.awayTeam]}`;

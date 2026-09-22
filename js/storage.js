@@ -24,6 +24,16 @@ const JERSEY_CATALOG = [
 
 const JERSEY_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
 
+// Team identity (color + name variants) - single source of truth for what
+// used to be separately re-declared in team.js, squad.js, and player-detail.js.
+// `label`/`full` cover the two Telegram/UI phrasings team.js needs; `name` is
+// the bare "Đội N" used on compact badges (squad.js, player-detail.js).
+const TEAM_INFO = {
+  1: { color: '#f97316', name: 'Đội 1', label: 'Đội 1 (Cam)', full: 'Đội 1 (Cam 🟠)' },
+  2: { color: '#22c55e', name: 'Đội 2', label: 'Đội 2 (Xanh Lá)', full: 'Đội 2 (Xanh Lá 🟢)' },
+  3: { color: '#94a3b8', name: 'Đội 3', label: 'Đội 3 (Thường)', full: 'Đội 3 (Thường ⚪)' }
+};
+
 // 21 Official Real Members Roster with Sân 5 (Futsal) Positions
 const DEFAULT_PLAYERS = [
   { id: 1, name: 'Trần Thắng', fullName: 'Trần Thắng', pos: 'PIV', ovr: 74, teamId: 1, pin: '7634', stats: { pac: 78, sho: 85, pas: 60, dri: 72, def: 38, phy: 70 }, attendance: 'going', goals: 5, assists: 2, streak: 3 },
@@ -128,6 +138,23 @@ class DataStore {
       return obj;
     }
     return value || {};
+  }
+
+  // Sums each scorer's goals across a list of matches, keyed by lowercased
+  // player name. Shared by every place that needs a goal tally (archived
+  // goals, cycle champion, Vua Phá Lưới board, Telegram reports) so the
+  // "how do we count a goal" rule only lives in one place.
+  static tallyGoalsByName(matches) {
+    const goalsByName = {};
+    (matches || []).forEach(m => {
+      if (m.status === 'finished' && m.scorers) {
+        m.scorers.forEach(s => {
+          const key = s.name.toLowerCase();
+          goalsByName[key] = (goalsByName[key] || 0) + (s.goals || 1);
+        });
+      }
+    });
+    return goalsByName;
   }
 
   // Back-fills any fields missing from older/incomplete data (local OR from the
@@ -288,16 +315,6 @@ class DataStore {
     }
   }
 
-  // Puts every player back to 'pending' so the team can vote fresh for a new week.
-  resetAllAttendance() {
-    this.data.players.forEach(p => {
-      p.attendance = 'pending';
-      p.votedAt = null;
-      p.votedBy = null;
-    });
-    this.save();
-  }
-
   // Single "new week" action that used to be 4 disconnected buttons across 3
   // pages (next-match date, match-day tag, attendance reset, fund session
   // reset) - admin sets one date and everything for the new week is prepped.
@@ -357,12 +374,8 @@ class DataStore {
   closeCycle(cycleDates) {
     if (window.TelegramNotify) TelegramNotify.sendCycleArchive(cycleDates, this.data);
 
-    const cycleMatches = (this.data.matches || []).filter(m => m.status === 'finished' && cycleDates.includes(m.matchDate));
-    const goalsByName = {};
-    cycleMatches.forEach(m => (m.scorers || []).forEach(s => {
-      const key = s.name.toLowerCase();
-      goalsByName[key] = (goalsByName[key] || 0) + (s.goals || 1);
-    }));
+    const cycleMatches = (this.data.matches || []).filter(m => cycleDates.includes(m.matchDate));
+    const goalsByName = DataStore.tallyGoalsByName(cycleMatches);
     const topEntry = Object.entries(goalsByName).sort((a, b) => b[1] - a[1])[0];
     if (topEntry) {
       const [nameKey, goals] = topEntry;
@@ -427,24 +440,16 @@ class DataStore {
     this.save();
   }
 
-  getPeriod() {
-    return this.data.period || { weekCount: 0, matchDates: [] };
-  }
-
-  // Goal totals must survive matches being purged from data.matches - whether
-  // via the admin's manual "Xoá dữ liệu tuần này" cleanup or the 4-session
-  // cycle auto-clear in startNewWeek(). Folds the goals of the matches about
-  // to be removed into a running per-name tally so Vua Phá Lưới stays
-  // cumulative across the whole season instead of resetting to 0.
+  // Goal totals must survive matches being purged from data.matches via the
+  // admin's manual "Xoá dữ liệu tuần này" cleanup mid-cycle. Folds the goals
+  // of the matches about to be removed into a running per-name tally so Vua
+  // Phá Lưới doesn't lose them just because the raw rows got tidied up -
+  // this bucket itself gets wiped at the end of the cycle (see closeCycle).
   archiveGoalsFromMatches(matches) {
     if (!this.data.archivedGoals) this.data.archivedGoals = {};
-    matches.forEach(m => {
-      if (m.status === 'finished' && m.scorers) {
-        m.scorers.forEach(s => {
-          const key = s.name.toLowerCase();
-          this.data.archivedGoals[key] = (this.data.archivedGoals[key] || 0) + (s.goals || 1);
-        });
-      }
+    const tally = DataStore.tallyGoalsByName(matches);
+    Object.entries(tally).forEach(([key, goals]) => {
+      this.data.archivedGoals[key] = (this.data.archivedGoals[key] || 0) + goals;
     });
   }
 
@@ -526,6 +531,10 @@ class DataStore {
 
   getJerseyCatalog() {
     return JERSEY_CATALOG;
+  }
+
+  getTeamInfo() {
+    return TEAM_INFO;
   }
 
   getJerseyVotes() {
@@ -697,29 +706,11 @@ class DataStore {
     }
   }
 
-  getTactics() {
-    return this.data.tactics || DEFAULT_TACTICS;
-  }
-
-  setFormation(formation) {
-    if (!this.data.tactics) this.data.tactics = DEFAULT_TACTICS;
-    this.data.tactics.formation = formation;
-    this.save();
-  }
-
-  swapStarterBench(teamId, outPlayerId, inPlayerId) {
-    if (!this.data.tactics) this.data.tactics = DEFAULT_TACTICS;
-    const starters = this.data.tactics.pitchStarters[teamId] || [];
-    const idx = starters.indexOf(Number(outPlayerId));
-    if (idx !== -1) {
-      starters[idx] = Number(inPlayerId);
-      this.save();
-    }
-  }
-
-  getFund() {
-    return this.data.fund;
-  }
+  // NOTE: data.tactics.pitchStarters is still written by autoBalanceTeams()
+  // below, but nothing reads it back for display anymore (the old formation
+  // getter/setter were unused and removed here) - left as-is since it's
+  // unclear whether this is a half-finished feature worth keeping the write
+  // path for. Flagged in the refactor report rather than removed outright.
 
   addFundTransaction(tx) {
     tx.id = Date.now();
@@ -736,53 +727,17 @@ class DataStore {
     this.save();
   }
 
-  toggleMatchPayment(playerId) {
-    const paidIds = this.data.fund.matchSession.paidIds;
-    const idx = paidIds.indexOf(Number(playerId));
-    if (idx !== -1) {
-      paidIds.splice(idx, 1);
-    } else {
-      paidIds.push(Number(playerId));
-    }
-    this.save();
-  }
-
-  updateMatchSessionInfo(fee, date) {
-    this.data.fund.matchSession.fee = Number(fee);
-    this.data.fund.matchSession.date = date;
-    this.save();
-  }
-
-  startNewMatchSession(fee, date) {
-    this.data.fund.matchSession = {
-      fee: Number(fee),
-      date: date,
-      paidIds: [],
-      customFees: {}
-    };
-    this.save();
-  }
-
+  // NOTE: data.fund keeps getting written here (income transactions logged
+  // every "Tuần Mới") even though the Quỹ đội page/nav tab was removed - see
+  // getPlayerMatchFee() below, still called from startNewWeek(). The other
+  // fund methods (toggle payment, custom fee, mark all paid/unpaid, start new
+  // session) had zero callers left once the Fund page was disconnected, so
+  // those were removed. Flagged in the refactor report: nothing can view this
+  // data anymore, worth deciding whether to keep recording it.
   getPlayerMatchFee(playerId) {
     const session = this.data.fund.matchSession;
     const custom = session.customFees ? session.customFees[playerId] : undefined;
     return custom !== undefined ? custom : session.fee;
-  }
-
-  setPlayerMatchFee(playerId, amount) {
-    if (!this.data.fund.matchSession.customFees) this.data.fund.matchSession.customFees = {};
-    this.data.fund.matchSession.customFees[playerId] = Number(amount);
-    this.save();
-  }
-
-  markAllMatchPaid() {
-    this.data.fund.matchSession.paidIds = this.data.players.map(p => p.id);
-    this.save();
-  }
-
-  markAllMatchUnpaid() {
-    this.data.fund.matchSession.paidIds = [];
-    this.save();
   }
 
   getNotice() {

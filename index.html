@@ -100,14 +100,14 @@
     </div>
 
     <!-- ===================================================================
-         PAGE 5: TRANG BXH (RANKING)
+         PAGE 4: TRANG BXH (RANKING)
          =================================================================== -->
     <div id="page-ranking" class="page-view">
       <!-- Loaded dynamically by js/pages/ranking.js -->
     </div>
 
     <!-- ===================================================================
-         PAGE 6: TRANG MẪU ÁO (JERSEY VOTING)
+         PAGE 5: TRANG MẪU ÁO (JERSEY VOTING)
          =================================================================== -->
     <div id="page-jersey" class="page-view">
       <!-- Loaded dynamically by js/pages/jersey.js -->
@@ -290,60 +290,7 @@
   </div>
 
   <!-- ===================================================================
-       MODAL 4: ADMIN FUND TRANSACTION MODAL
-       =================================================================== -->
-  <div id="fund-modal" class="modal-backdrop">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">💸 Thêm Giao Dịch Quỹ</h3>
-        <button class="modal-close-btn" onclick="App.closeModal('fund-modal')">&times;</button>
-      </div>
-      <form id="fund-form" onsubmit="FundPage.saveTransaction(event)">
-        <div class="form-group">
-          <label class="form-label">Loại giao dịch:</label>
-          <select id="fund-type" class="form-select" required>
-            <option value="income">➕ Thu Quỹ (+)</option>
-            <option value="expense">➖ Chi Phí (-)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mô tả chi tiết:</label>
-          <input type="text" id="fund-desc" class="form-input" required placeholder="VD: Tiền sân Sân Chảo Lửa">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Số tiền (VNĐ):</label>
-          <input type="number" id="fund-amount" class="form-input" required min="1000" step="5000" placeholder="VD: 600000">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Ngày thực hiện:</label>
-          <input type="date" id="fund-date" class="form-input" required>
-        </div>
-
-        <div style="display:flex; gap:10px; margin-top:20px;">
-          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="App.closeModal('fund-modal')">Hủy</button>
-          <button type="submit" class="btn btn-primary" style="flex:1;">Lưu Giao Dịch</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ===================================================================
-       MODAL 5: FUND CHECKLIST MODAL (Chi tiết đóng quỹ)
-       =================================================================== -->
-  <div id="fund-checklist-modal" class="modal-backdrop">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">📋 Chi Tiết Đóng Tiền Trận Đấu</h3>
-        <button class="modal-close-btn" onclick="App.closeModal('fund-checklist-modal')">&times;</button>
-      </div>
-      <div id="fund-checklist-content">
-        <!-- Dynamic checklist of 21 players -->
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================================================================
-       MODAL 6: PLAYER DETAIL CARD (View profile + Radar Chart)
+       MODAL 4: PLAYER DETAIL CARD (View profile + Radar Chart)
        =================================================================== -->
   <div id="player-detail-modal" class="modal-backdrop">
     <div class="modal-card" style="max-width:380px;">
@@ -358,7 +305,7 @@
   </div>
 
   <!-- ===================================================================
-       MODAL 7: PUSH NOTIFICATION RECIPIENT PICKER ("Báo đội hình")
+       MODAL 5: PUSH NOTIFICATION RECIPIENT PICKER ("Báo đội hình")
        =================================================================== -->
   <div id="notify-modal" class="modal-backdrop">
     <div class="modal-card">
@@ -379,7 +326,7 @@
   </div>
 
   <!-- ===================================================================
-       MODAL 8: NOTIFICATION INBOX (per-person, opened via the bell icon)
+       MODAL 6: NOTIFICATION INBOX (per-person, opened via the bell icon)
        =================================================================== -->
   <div id="notify-inbox-modal" class="modal-backdrop">
     <div class="modal-card">
@@ -397,28 +344,28 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
-  <script src="js/firebase-config.js?v=3.8"></script>
+  <script src="js/firebase-config.js?v=3.9"></script>
 
   <!-- Telegram (optional vote notifications) -->
-  <script src="js/telegram-config.js?v=3.8"></script>
-  <script src="js/telegram-notify.js?v=3.8"></script>
+  <script src="js/telegram-config.js?v=3.9"></script>
+  <script src="js/telegram-notify.js?v=3.9"></script>
 
   <!-- Push Notifications (optional, needs js/push-config.js VAPID key) -->
-  <script src="js/push-config.js?v=3.8"></script>
-  <script src="js/push-notify.js?v=3.8"></script>
-  <script src="js/notify-inbox.js?v=3.8"></script>
+  <script src="js/push-config.js?v=3.9"></script>
+  <script src="js/push-notify.js?v=3.9"></script>
+  <script src="js/notify-inbox.js?v=3.9"></script>
 
   <!-- JavaScript Modules -->
-  <script src="js/theme.js?v=3.8"></script>
-  <script src="js/cloud-sync.js?v=3.8"></script>
-  <script src="js/storage.js?v=3.8"></script>
-  <script src="js/auth.js?v=3.8"></script>
-  <script src="js/app.js?v=3.8"></script>
-  <script src="js/pages/home.js?v=3.8"></script>
-  <script src="js/pages/team.js?v=3.8"></script>
-  <script src="js/pages/squad.js?v=3.8"></script>
-  <script src="js/pages/ranking.js?v=3.8"></script>
-  <script src="js/pages/jersey.js?v=3.8"></script>
-  <script src="js/pages/player-detail.js?v=3.8"></script>
+  <script src="js/theme.js?v=3.9"></script>
+  <script src="js/cloud-sync.js?v=3.9"></script>
+  <script src="js/storage.js?v=3.9"></script>
+  <script src="js/auth.js?v=3.9"></script>
+  <script src="js/app.js?v=3.9"></script>
+  <script src="js/pages/home.js?v=3.9"></script>
+  <script src="js/pages/team.js?v=3.9"></script>
+  <script src="js/pages/squad.js?v=3.9"></script>
+  <script src="js/pages/ranking.js?v=3.9"></script>
+  <script src="js/pages/jersey.js?v=3.9"></script>
+  <script src="js/pages/player-detail.js?v=3.9"></script>
 </body>
 </html>

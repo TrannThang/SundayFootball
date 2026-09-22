@@ -94,14 +94,14 @@ class PushNotifyEngine {
   // defaulting to "everyone" instead of "everyone going".
   notifyRestWeek() {
     if (!Auth.isAdmin()) return;
-    const [y, m, d] = Store.getMatchDay().date.split('-');
-    this.openNotifyModal('🌧 Nghỉ đá tuần này', `Chủ Nhật ${d}/${m}/${y} nghỉ, không đá nhé anh em!`, true);
+    const dateLabel = App.formatDateVN(Store.getMatchDay().date);
+    this.openNotifyModal('🌧 Nghỉ đá tuần này', `Chủ Nhật ${dateLabel} nghỉ, không đá nhé anh em!`, true);
   }
 
   notifyCheckinReminder() {
     if (!Auth.isAdmin()) return;
-    const [y, m, d] = Store.getMatchDay().date.split('-');
-    this.openNotifyModal('📢 Nhắc điểm danh', `Chủ Nhật ${d}/${m}/${y} có đá - vào điểm danh nhé!`, true);
+    const dateLabel = App.formatDateVN(Store.getMatchDay().date);
+    this.openNotifyModal('📢 Nhắc điểm danh', `Chủ Nhật ${dateLabel} có đá - vào điểm danh nhé!`, true);
   }
 
   selectAll() {

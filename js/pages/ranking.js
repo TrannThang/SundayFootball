@@ -106,13 +106,9 @@ class RankingPageController {
     // (see Store.closeCycle) - so this board resets to 0 each new cycle
     // instead of carrying goals across the whole season.
     const goalsByName = { ...Store.getArchivedGoals() };
-    matches.forEach(m => {
-      if (m.status === 'finished' && m.scorers) {
-        m.scorers.forEach(s => {
-          const key = s.name.toLowerCase();
-          goalsByName[key] = (goalsByName[key] || 0) + (s.goals || 1);
-        });
-      }
+    const liveTally = DataStore.tallyGoalsByName(matches);
+    Object.entries(liveTally).forEach(([key, goals]) => {
+      goalsByName[key] = (goalsByName[key] || 0) + goals;
     });
 
     return players

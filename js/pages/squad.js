@@ -60,9 +60,8 @@ class SquadPageController {
   }
 
   renderFifaCard(p, isAdmin) {
-    const teamColors = { 1: '#f97316', 2: '#22c55e', 3: '#94a3b8' };
-    const teamNames = { 1: 'Đội 1', 2: 'Đội 2', 3: 'Đội 3' };
-    const teamColor = teamColors[p.teamId] || '#06b6d4';
+    const teamInfo = Store.getTeamInfo();
+    const teamColor = (teamInfo[p.teamId] && teamInfo[p.teamId].color) || '#06b6d4';
 
     return `
       <div class="fifa-card" style="border-top: 3px solid ${teamColor};" onclick="PlayerDetail.show(${p.id})">
@@ -72,7 +71,7 @@ class SquadPageController {
             <div class="fifa-pos pos-${p.pos}">${p.pos}</div>
           </div>
           <div style="text-align:right;">
-            <span style="font-size:0.68rem; font-weight:800; color:${teamColor};">${teamNames[p.teamId]}</span>
+            <span style="font-size:0.68rem; font-weight:800; color:${teamColor};">${teamInfo[p.teamId] ? teamInfo[p.teamId].name : ''}</span>
             ${p.attendance === 'going' ? `<div style="font-size:0.65rem; color:var(--accent-emerald); font-weight:800;">🏅 Điểm danh</div>` : ''}
             ${p.attendance === 'pending' ? `<div style="font-size:0.65rem; color:var(--accent-gold); font-weight:800;">⏳ Chưa vote</div>` : ''}
           </div>

@@ -104,6 +104,17 @@ class AppController {
     return `${y}-${m}-${day}`;
   }
 
+  // Formats an ISO "YYYY-MM-DD" date as "DD/MM/YYYY" - the plain (non-relative,
+  // non-weekday) date format used across match history, Telegram messages,
+  // and match-day headers (was separately re-implemented in several page
+  // controllers; HomePage.formatMatchDayLabel is a distinct helper that adds
+  // the weekday name, not a duplicate of this one).
+  formatDateVN(isoDate) {
+    if (!isoDate) return '';
+    const [y, m, d] = isoDate.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
   // Renders an ISO timestamp as a short Vietnamese relative-time string
   // (e.g. "5 phút trước", "hôm qua"), for showing when someone voted.
   formatRelativeTime(isoString) {

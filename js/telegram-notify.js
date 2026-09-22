@@ -44,13 +44,7 @@ class TelegramNotifyEngine {
 
     if (matches.length === 0 && skipped.length === 0) return; // nothing happened this cycle, skip the noise
 
-    const goalsByName = {};
-    matches.forEach(m => {
-      (m.scorers || []).forEach(s => {
-        const key = s.name.toLowerCase();
-        goalsByName[key] = (goalsByName[key] || 0) + (s.goals || 1);
-      });
-    });
+    const goalsByName = DataStore.tallyGoalsByName(matches);
 
     const topScorers = players
       .map(p => ({ name: p.name, goals: goalsByName[p.name.toLowerCase()] || 0 }))
@@ -84,9 +78,8 @@ class TelegramNotifyEngine {
     const matches = (data.matches || []).filter(m => m.status === 'finished' && m.matchDate === dateStr);
     const players = data.players || [];
     const skip = (data.skippedWeeks || []).find(s => s.date === dateStr);
-    const [y, m, d] = dateStr.split('-');
 
-    let text = `📅 NGÀY ${d}/${m}/${y}\n\n`;
+    let text = `📅 NGÀY ${App.formatDateVN(dateStr)}\n\n`;
 
     if (skip) {
       text += `🌧 Nghỉ: ${skip.reason}`;
@@ -100,14 +93,7 @@ class TelegramNotifyEngine {
       return;
     }
 
-    const goalsByName = {};
-    matches.forEach(mm => {
-      (mm.scorers || []).forEach(s => {
-        const key = s.name.toLowerCase();
-        goalsByName[key] = (goalsByName[key] || 0) + (s.goals || 1);
-      });
-    });
-
+    const goalsByName = DataStore.tallyGoalsByName(matches);
     const topScorers = Object.entries(goalsByName).sort((a, b) => b[1] - a[1]);
     if (topScorers.length > 0) {
       text += `🥅 Ghi bàn:\n`;
