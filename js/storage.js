@@ -380,8 +380,17 @@ class DataStore {
   closeCycle(cycleDates) {
     if (window.TelegramNotify) TelegramNotify.sendCycleArchive(cycleDates, this.data);
 
+    // Must include archivedGoals (goals from weeks purged mid-cycle via
+    // "Xoá dữ liệu tuần này") same as the live Vua Phá Lưới board does
+    // (see ranking.js calculateTopScorers) - otherwise a player whose week
+    // got cleared loses those goals from the champion pick even though the
+    // live board counted them right up until this moment.
     const cycleMatches = (this.data.matches || []).filter(m => cycleDates.includes(m.matchDate));
-    const goalsByName = DataStore.tallyGoalsByName(cycleMatches);
+    const goalsByName = { ...this.data.archivedGoals };
+    const liveTally = DataStore.tallyGoalsByName(cycleMatches);
+    Object.entries(liveTally).forEach(([key, goals]) => {
+      goalsByName[key] = (goalsByName[key] || 0) + goals;
+    });
     const topEntry = Object.entries(goalsByName).sort((a, b) => b[1] - a[1])[0];
     if (topEntry) {
       const [nameKey, goals] = topEntry;

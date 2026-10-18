@@ -44,7 +44,15 @@ class TelegramNotifyEngine {
 
     if (matches.length === 0 && skipped.length === 0) return; // nothing happened this cycle, skip the noise
 
-    const goalsByName = DataStore.tallyGoalsByName(matches);
+    // Must include archivedGoals (goals from weeks purged mid-cycle via
+    // "Xoá dữ liệu tuần này") same as the live Vua Phá Lưới board, and same
+    // as Store.closeCycle's own champion pick - this runs before that pick
+    // wipes archivedGoals, so it's still the real data for this cycle.
+    const goalsByName = { ...data.archivedGoals };
+    const liveTally = DataStore.tallyGoalsByName(matches);
+    Object.entries(liveTally).forEach(([key, goals]) => {
+      goalsByName[key] = (goalsByName[key] || 0) + goals;
+    });
 
     const topScorers = players
       .map(p => ({ name: p.name, goals: goalsByName[p.name.toLowerCase()] || 0 }))
