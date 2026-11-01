@@ -28,15 +28,20 @@ class CloudSyncEngine {
     firebase.initializeApp(window.FIREBASE_CONFIG);
     this.dbRef = firebase.database().ref('sundayFootballData');
 
-    // Seed the cloud once if it's completely empty (first-ever run for this team),
-    // then attach a live listener that fires immediately and on every future change.
-    this.dbRef.once('value').then((snapshot) => {
-      if (!snapshot.exists()) {
-        this.dbRef.set(Store.data);
-      }
-      this.ready = true;
-      this.dbRef.on('value', (snap) => this.handleRemoteChange(snap));
-    });
+    // NOTE: this used to also "seed the cloud if empty" by calling
+    // this.dbRef.set(Store.data) when a once('value') check resolved as
+    // !snapshot.exists() - removed after that exact path wiped months of
+    // real production data (nextMatch/matchDay/period/cycleChampions all
+    // reverted to a device's stale local copy from the app's very first
+    // week). A transient network/permission hiccup on ANY device opening
+    // the app can make that check falsely report "doesn't exist" even
+    // when the cloud has real data, and there's no safe way to tell a
+    // genuinely-empty first run apart from that from the client alone.
+    // The database already exists for this team now, so this isn't
+    // needed again - if it ever is (a brand new team's first deploy),
+    // seed it once manually instead of leaving this automatic.
+    this.ready = true;
+    this.dbRef.on('value', (snap) => this.handleRemoteChange(snap));
   }
 
   handleRemoteChange(snapshot) {
