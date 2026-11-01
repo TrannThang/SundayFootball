@@ -15,14 +15,19 @@ class AuthManager {
   }
 
   // Force-logout mechanism: if an admin bumps Store's authEpoch (see
-  // HomePage.forceLogoutAll), every non-admin session stamped with an older
-  // epoch gets logged out automatically next time it's checked - on app boot
-  // and on every realtime update from CloudSync - no need to touch each
-  // device by hand. Admin sessions are always exempt.
+  // HomePage.forceLogoutAll) or adminAuthEpoch (see HomePage.forceLogoutAdmins),
+  // every session of the matching kind stamped with an older epoch gets
+  // logged out automatically next time it's checked - on app boot and on
+  // every realtime update from CloudSync - no need to touch each device by
+  // hand. The two epochs are independent: bumping one never affects the
+  // other kind of session.
   checkSessionValidity() {
-    if (!this.currentUser || this.currentUser.isAdmin) return;
+    if (!this.currentUser) return;
     const epoch = typeof this.currentUser.epoch === 'number' ? this.currentUser.epoch : 0;
-    if (epoch < Store.getAuthEpoch()) {
+    const isStale = this.currentUser.isAdmin
+      ? epoch < Store.getAdminAuthEpoch()
+      : epoch < Store.getAuthEpoch();
+    if (isStale) {
       this.saveSession(null);
       if (window.App) App.showToast('Phiên đăng nhập đã hết hạn, vui lòng nhập lại mã PIN.', 'info');
     }
@@ -146,7 +151,7 @@ class AuthManager {
 
     // Check Admin PIN
     if (pin === this.ADMIN_PIN || pin.toUpperCase() === 'ADMIN') {
-      this.saveSession({ isAdmin: true, name: 'Quản trị viên' });
+      this.saveSession({ isAdmin: true, name: 'Quản trị viên', epoch: Store.getAdminAuthEpoch() });
       App.showToast('Đăng nhập thành công với quyền Admin! ⚡', 'success');
       this.closePinModal();
       App.refreshCurrentPage();

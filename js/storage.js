@@ -222,6 +222,7 @@ class DataStore {
     parsed.period.matchDates = parsed.period.matchDates || [];
     parsed.archivedGoals = DataStore.coerceKeyedObject(parsed.archivedGoals);
     parsed.authEpoch = parsed.authEpoch || 0;
+    parsed.adminAuthEpoch = parsed.adminAuthEpoch || 0;
     parsed.pushTokens = DataStore.coerceKeyedObject(parsed.pushTokens);
     parsed.jerseyVotes = DataStore.coerceKeyedObject(parsed.jerseyVotes);
     parsed.jerseyPrintInfo = DataStore.coerceKeyedObject(parsed.jerseyPrintInfo);
@@ -246,6 +247,7 @@ class DataStore {
       period: { weekCount: 0, matchDates: [] },
       archivedGoals: {},
       authEpoch: 0,
+      adminAuthEpoch: 0,
       pushTokens: {},
       notifications: [],
       notifyLastSeen: {},
@@ -488,6 +490,23 @@ class DataStore {
     this.data.authEpoch = this.getAuthEpoch() + 1;
     this.save();
     return this.data.authEpoch;
+  }
+
+  getAdminAuthEpoch() {
+    return this.data.adminAuthEpoch || 0;
+  }
+
+  // Same force-logout mechanism as bumpAuthEpoch, but for admin sessions
+  // specifically (those are normally exempt from the member one by design -
+  // see AuthManager.checkSessionValidity). Needed because the admin PIN is
+  // one shared static code, not a per-person login - this is the only way
+  // to kick someone's CURRENT session once you've handed that PIN out.
+  // Doesn't stop them logging back in with the same PIN; change ADMIN_PIN
+  // in js/auth.js for that.
+  bumpAdminAuthEpoch() {
+    this.data.adminAuthEpoch = this.getAdminAuthEpoch() + 1;
+    this.save();
+    return this.data.adminAuthEpoch;
   }
 
   // ownerId is a player id (number) or the string 'admin'. Multiple devices

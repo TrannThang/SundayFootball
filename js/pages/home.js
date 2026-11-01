@@ -140,8 +140,9 @@ class HomePageController {
         <div style="text-align:left;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <h3 style="font-size:0.95rem; font-weight:800; color:var(--accent-gold);">⚡ Quyền Quản Trị Viên (Admin)</h3>
-            <div style="display:flex; gap:6px;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
               <button class="btn btn-danger btn-sm" onclick="HomePage.forceLogoutAll()" style="padding:4px 8px; font-size:0.75rem;">🚪 Đăng xuất tất cả</button>
+              <button class="btn btn-danger btn-sm" onclick="HomePage.forceLogoutAdmins()" style="padding:4px 8px; font-size:0.75rem;">🔒 Đăng xuất Admin khác</button>
               <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">Đăng xuất</button>
             </div>
           </div>
@@ -221,6 +222,29 @@ class HomePageController {
     if (!confirm('Đăng xuất tất cả tài khoản thành viên đang đăng nhập trên mọi thiết bị? (Admin không bị ảnh hưởng, mọi người sẽ cần nhập lại mã PIN)')) return;
     Store.bumpAuthEpoch();
     App.showToast('Đã đăng xuất tất cả thành viên. Họ sẽ cần nhập lại mã PIN ở lần mở app tiếp theo.', 'success');
+  }
+
+  // Same idea as forceLogoutAll, but for Admin sessions - useful since the
+  // admin PIN is one shared code handed out to several people, not a
+  // per-person login, so this is the only way to kick someone's current
+  // session once they have it. Every other device holding an admin session
+  // gets logged out next time it syncs. Doesn't stop anyone logging back in
+  // with the same PIN - change Auth.ADMIN_PIN (js/auth.js) if that's needed.
+  //
+  // Re-stamps THIS device's own session BEFORE bumping Store's epoch, not
+  // after - Firebase's local-cache echo fires CloudSync.handleRemoteChange
+  // (which re-runs checkSessionValidity) synchronously as part of the push
+  // below, so by the time control would return to an "after" restamp, this
+  // device's own session had already been nuked as "stale" by its own click.
+  forceLogoutAdmins() {
+    if (!confirm('Đăng xuất tất cả phiên Admin đang mở trên các thiết bị khác? (Thiết bị này vẫn giữ đăng nhập, thành viên không bị ảnh hưởng - ai vẫn có mã PIN admin thì vẫn đăng nhập lại được)')) return;
+    const newEpoch = Store.getAdminAuthEpoch() + 1;
+    if (Auth.currentUser && Auth.currentUser.isAdmin) {
+      Auth.currentUser.epoch = newEpoch;
+      Auth.saveSession(Auth.currentUser);
+    }
+    Store.bumpAdminAuthEpoch();
+    App.showToast('Đã đăng xuất các phiên Admin khác. Thiết bị này vẫn đăng nhập bình thường.', 'success');
   }
 
   setUserAttendance(status) {
