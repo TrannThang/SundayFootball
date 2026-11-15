@@ -15,7 +15,10 @@ class RankingPageController {
     const topScorers = this.calculateTopScorers(matches, players);
 
     container.innerHTML = `
-      ${this.renderScorerHero(topScorers[0])}
+      ${this.renderScorerHero(topScorers[0] && {
+        ...topScorers[0],
+        name: topScorers.filter(p => p.matchGoals === topScorers[0].matchGoals).map(p => p.name).join(' & ')
+      })}
 
       <!-- Golden Boot + Champions History sit side-by-side on desktop (see
            .ranking-grid), stacked on mobile. -->
@@ -32,7 +35,7 @@ class RankingPageController {
 
           <div style="display:flex; flex-direction:column; gap:6px;">
             ${topScorers.length > 0 ? topScorers.map((p, idx) => {
-              const isFirst = idx === 0;
+              const isFirst = p.matchGoals === topScorers[0].matchGoals; // ties share the crown
               const rowBg = isFirst ? 'linear-gradient(90deg, rgba(245,158,11,0.16), rgba(var(--bg-dark-rgb), 0.6))' : 'rgba(var(--bg-dark-rgb), 0.6)';
               const rowBorder = isFirst ? 'border:1px solid rgba(245,158,11,0.35);' : '';
               const rankLabel = isFirst ? '👑' : `#${idx + 1}`;

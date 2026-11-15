@@ -227,6 +227,14 @@ class DataStore {
     parsed.jerseyVotes = DataStore.coerceKeyedObject(parsed.jerseyVotes);
     parsed.jerseyPrintInfo = DataStore.coerceKeyedObject(parsed.jerseyPrintInfo);
     parsed.cycleChampions = parsed.cycleChampions || [];
+    // One-off fix: the 25/10 - 15/11 cycle closed before ties were supported,
+    // so only Hòa Nova got recorded although Trần Thắng also scored 13.
+    parsed.cycleChampions.forEach(c => {
+      if (c.rangeStart === '2026-10-25' && c.goals === 13 && !c.names) {
+        c.names = [c.name, 'Trần Thắng'].filter((n, i, a) => a.indexOf(n) === i);
+        c.name = c.names.join(' & ');
+      }
+    });
     parsed.jerseySelectionLocked = !!parsed.jerseySelectionLocked;
     parsed.notifications = parsed.notifications || [];
     parsed.notifyLastSeen = DataStore.coerceKeyedObject(parsed.notifyLastSeen);
@@ -393,14 +401,20 @@ class DataStore {
     Object.entries(liveTally).forEach(([key, goals]) => {
       goalsByName[key] = (goalsByName[key] || 0) + goals;
     });
-    const topEntry = Object.entries(goalsByName).sort((a, b) => b[1] - a[1])[0];
-    if (topEntry) {
-      const [nameKey, goals] = topEntry;
-      const player = this.data.players.find(p => p.name.toLowerCase() === nameKey);
+    // Ties share the title: everyone level on the top goal count goes on the
+    // board together, not just whichever one the sort happened to put first.
+    const topGoals = Math.max(0, ...Object.values(goalsByName));
+    const winnerKeys = Object.keys(goalsByName).filter(k => topGoals > 0 && goalsByName[k] === topGoals);
+    if (winnerKeys.length > 0) {
+      const names = winnerKeys.map(key => {
+        const player = this.data.players.find(p => p.name.toLowerCase() === key);
+        return player ? player.name : key;
+      });
       if (!this.data.cycleChampions) this.data.cycleChampions = [];
       this.data.cycleChampions.unshift({
-        name: player ? player.name : nameKey,
-        goals,
+        name: names.join(' & '),
+        names,
+        goals: topGoals,
         rangeStart: cycleDates[0],
         rangeEnd: cycleDates[cycleDates.length - 1],
         closedAt: new Date().toISOString()
