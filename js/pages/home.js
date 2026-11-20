@@ -22,8 +22,8 @@ class HomePageController {
           <div class="section-badge">⚽ BUỔI ĐÁ SẮP TỚI</div>
           ${Auth.isAdmin() ? `
             <div style="display:flex; gap:6px;">
-              <button class="btn btn-outline btn-sm" onclick="HomePage.editNextMatch()" style="padding:2px 8px; font-size:0.75rem;">✏️ Sửa lịch</button>
-              <button class="btn btn-primary btn-sm" onclick="HomePage.startNewWeek()" style="padding:2px 8px; font-size:0.75rem;">🔄 Tuần Mới</button>
+              <button class="btn btn-outline btn-sm" onclick="HomePage.editNextMatch()">✏️ Sửa lịch</button>
+              <button class="btn btn-primary btn-sm" onclick="HomePage.startNewWeek()">🔄 Tuần mới</button>
             </div>
           ` : ''}
         </div>
@@ -125,11 +125,11 @@ class HomePageController {
   renderAttendanceSection(currentUser, currentPlayer) {
     if (!currentUser) {
       return `
-        <div style="padding:4px 0;">
-          <h3 style="font-size:1rem; font-weight:800; margin-bottom:4px;">🔑 ĐIỂM DANH BẰNG MÃ PIN CÁ NHÂN</h3>
-          <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">Nhập mã PIN cá nhân 4 chữ số để xác thực nhanh trong 2 giây!</p>
-          <button class="btn btn-primary btn-block" onclick="Auth.openPinModal()">
-            ⚡ Nhập Mã PIN Điểm Danh Ngay
+        <div>
+          <h3 class="attendance-title">Điểm danh buổi đá</h3>
+          <p class="attendance-hint">Đăng nhập bằng mã PIN cá nhân để báo đi hoặc vắng.</p>
+          <button class="btn btn-primary btn-block btn-lg" onclick="Auth.openPinModal()">
+            Nhập PIN để điểm danh
           </button>
         </div>
       `;
@@ -137,28 +137,35 @@ class HomePageController {
 
     if (currentUser.isAdmin) {
       return `
-        <div style="text-align:left;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <h3 style="font-size:0.95rem; font-weight:800; color:var(--accent-gold);">⚡ Quyền Quản Trị Viên (Admin)</h3>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button class="btn btn-danger btn-sm" onclick="HomePage.forceLogoutAll()" style="padding:4px 8px; font-size:0.75rem;">🚪 Đăng xuất tất cả</button>
-              <button class="btn btn-danger btn-sm" onclick="HomePage.forceLogoutAdmins()" style="padding:4px 8px; font-size:0.75rem;">🔒 Đăng xuất Admin khác</button>
-              <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">Đăng xuất</button>
-            </div>
+        <div>
+          <div class="attendance-account-row">
+            <h3 class="attendance-title attendance-title-admin">⚡ Quản trị viên</h3>
+            <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">Đăng xuất</button>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="PushNotify.enable()" style="padding:4px 8px; font-size:0.75rem; margin-bottom:10px;">🔔 Bật thông báo cho máy này</button>
 
-          <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Bạn có thể nhanh chóng điểm danh giúp thành viên bên dưới:</p>
-
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <select id="admin-quick-player-select" class="form-select" style="flex:1; min-width:160px;">
-              ${Store.getPlayers().map(p => `
-                <option value="${p.id}">${p.name} - ${p.attendance === 'going' ? '✅ Đã ĐI' : p.attendance === 'absent' ? '❌ VẮNG' : '⏳ Chưa vote'}</option>
-              `).join('')}
-            </select>
+          <p class="attendance-hint">Điểm danh giúp thành viên:</p>
+          <select id="admin-quick-player-select" class="form-select" aria-label="Chọn thành viên">
+            ${Store.getPlayers().map(p => `
+              <option value="${p.id}">${p.name} - ${p.attendance === 'going' ? '✅ Đã ĐI' : p.attendance === 'absent' ? '❌ VẮNG' : '⏳ Chưa vote'}</option>
+            `).join('')}
+          </select>
+          <div class="admin-quick-btns">
             <button class="btn btn-success btn-sm" onclick="HomePage.adminToggleAttendance('going')">ĐI</button>
             <button class="btn btn-danger btn-sm" onclick="HomePage.adminToggleAttendance('absent')">VẮNG</button>
             <button class="btn btn-secondary btn-sm" onclick="HomePage.adminToggleAttendance('pending')">Chưa vote</button>
+          </div>
+
+          <button class="btn btn-outline btn-sm" onclick="PushNotify.enable()" style="margin-top:12px;">🔔 Bật thông báo cho máy này</button>
+
+          <!-- Destructive actions live in their own clearly-labelled zone,
+               away from the everyday buttons, so a stray tap meant for
+               "Đăng xuất" can't hit them. -->
+          <div class="danger-zone">
+            <div class="danger-zone-title">Vùng nguy hiểm</div>
+            <div class="danger-zone-btns">
+              <button class="btn btn-danger-outline btn-sm" onclick="HomePage.forceLogoutAll()">🚪 Đăng xuất tất cả thành viên</button>
+              <button class="btn btn-danger-outline btn-sm" onclick="HomePage.forceLogoutAdmins()">🔒 Đăng xuất Admin khác</button>
+            </div>
           </div>
         </div>
       `;
@@ -168,35 +175,34 @@ class HomePageController {
       const status = currentPlayer.attendance;
       const isGoing = status === 'going';
       const isAbsent = status === 'absent';
-      const statusColor = isGoing ? 'var(--accent-emerald)' : isAbsent ? 'var(--accent-rose)' : 'var(--accent-gold)';
-      const statusLabel = isGoing ? '✅ BẠN SẼ THAM GIA' : isAbsent ? '❌ BẠN BÁO VẮNG' : '⏳ BẠN CHƯA XÁC NHẬN';
+      const statusClass = isGoing ? 'is-going' : isAbsent ? 'is-absent' : 'is-pending';
+      const statusLabel = isGoing ? '✅ Bạn sẽ tham gia' : isAbsent ? '❌ Bạn báo vắng' : '⏳ Bạn chưa xác nhận';
       return `
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <span style="font-size:0.85rem; color:var(--text-secondary);">Thành viên: <strong style="color:var(--text-primary); font-size:0.95rem;">${currentPlayer.name}</strong></span>
-            <div style="display:flex; gap:6px;">
-              <button class="btn btn-outline btn-sm" onclick="HomePage.changeMyPin()" style="padding:4px 8px; font-size:0.75rem;">🔑 Đổi mã PIN</button>
-              <button class="btn btn-secondary btn-sm" onclick="Auth.logout()" style="padding:4px 8px; font-size:0.75rem;">Đăng xuất</button>
+          <div class="attendance-account-row">
+            <span class="attendance-hint" style="margin:0;">Thành viên: <strong class="attendance-name">${currentPlayer.name}</strong></span>
+            <div class="attendance-account-btns">
+              <button class="btn btn-outline btn-sm" onclick="HomePage.changeMyPin()">🔑 Đổi PIN</button>
+              <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">Đăng xuất</button>
             </div>
           </div>
 
-          <button class="btn btn-outline btn-sm" onclick="PushNotify.enable()" style="padding:4px 8px; font-size:0.75rem; margin-bottom:10px;">🔔 Bật thông báo cho máy này</button>
+          <div class="attendance-status ${statusClass}" role="status">${statusLabel}</div>
 
-          <div style="font-size:0.9rem; font-weight:700; margin-bottom:10px;">
-            Trạng thái hiện tại của bạn:
-            <span style="color:${statusColor}; font-weight:900;">
-              ${statusLabel}
-            </span>
-          </div>
-
+          <!-- Both choices always stay fully visible and tappable; the chosen
+               one is filled with a ✓, the other is an outline. (Used to dim
+               the unchosen one to 0.65, which made both look disabled before
+               anyone had voted.) -->
           <div class="attendance-btns-group">
-            <button class="attendance-btn-go" onclick="HomePage.setUserAttendance('going')" style="${isGoing ? 'opacity:1; transform:scale(1.02); box-shadow:0 0 15px rgba(16,185,129,0.5);' : 'opacity:0.65;'}">
-              ⚽ TÔI SẼ ĐI
+            <button class="attendance-choice choice-go ${isGoing ? 'is-selected' : ''}" aria-pressed="${isGoing}" onclick="HomePage.setUserAttendance('going')">
+              ${isGoing ? '✓ ' : '⚽ '}Tôi sẽ đi
             </button>
-            <button class="attendance-btn-no" onclick="HomePage.setUserAttendance('absent')" style="${isAbsent ? 'opacity:1; transform:scale(1.02); box-shadow:0 0 15px rgba(244,63,94,0.5);' : 'opacity:0.65;'}">
-              ❌ BÁO VẮNG
+            <button class="attendance-choice choice-no ${isAbsent ? 'is-selected' : ''}" aria-pressed="${isAbsent}" onclick="HomePage.setUserAttendance('absent')">
+              ${isAbsent ? '✓ ' : ''}Báo vắng
             </button>
           </div>
+
+          <button class="btn btn-outline btn-sm" onclick="PushNotify.enable()" style="margin-top:12px;">🔔 Bật thông báo cho máy này</button>
         </div>
       `;
     }

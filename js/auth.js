@@ -101,6 +101,16 @@ class AuthManager {
     if (textInput) textInput.value = '';
     this.updatePinDisplay();
     App.openModal('pin-modal');
+    if (textInput) setTimeout(() => textInput.focus(), 50);
+  }
+
+  // Logs in as soon as 4 typed digits match a real PIN - no extra tap needed.
+  // Only auto-submits on an exact match, so a longer PIN (or a typo) never
+  // fires an error toast mid-typing; those still go through Enter / the button.
+  onPinInput(value) {
+    const pin = String(value || '').trim();
+    if (!/^\d{4}$/.test(pin)) return;
+    if (pin === this.ADMIN_PIN || Store.getPlayerByPin(pin)) this.submitPinWithVal(pin);
   }
 
   closePinModal() {
