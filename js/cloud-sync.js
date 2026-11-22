@@ -10,6 +10,10 @@ class CloudSyncEngine {
     this.dbRef = null;
     this.ready = false;
     this.applyingRemoteUpdate = false;
+    // Full-tree writes are only safe once this device holds the real cloud
+    // data AND is online right now (see pushToCloud).
+    this.hasSynced = false;
+    this.connected = false;
   }
 
   isConfigured() {
@@ -41,6 +45,9 @@ class CloudSyncEngine {
     // needed again - if it ever is (a brand new team's first deploy),
     // seed it once manually instead of leaving this automatic.
     this.ready = true;
+    firebase.database().ref('.info/connected').on('value', (snap) => {
+      this.connected = snap.val() === true;
+    });
     this.dbRef.on('value', (snap) => this.handleRemoteChange(snap));
   }
 
@@ -54,6 +61,7 @@ class CloudSyncEngine {
     const normalized = Store.normalize(cloudData);
 
     this.applyingRemoteUpdate = true;
+    this.hasSynced = true;
     Store.data = normalized;
     localStorage.setItem('SUNDAY_FOOTBALL_DATA_V3', JSON.stringify(normalized));
     if (window.Auth) Auth.checkSessionValidity();
@@ -65,6 +73,18 @@ class CloudSyncEngine {
     // Avoid re-pushing data that just arrived from the cloud itself.
     if (this.applyingRemoteUpdate) return;
     if (!this.ready || !this.dbRef) return;
+    // pushToCloud replaces the WHOLE tree. A phone that hasn't received the
+    // cloud snapshot yet (just opened, slow network) or is offline (Firebase
+    // would queue the set() and replay it on reconnect) only has its own
+    // stale localStorage copy - pushing that once reverted 25 players' PINs
+    // to the August defaults (TT123, XH345...). Refuse instead of clobbering.
+    if (!this.hasSynced || !this.connected) {
+      console.warn('Chưa đồng bộ xong với cloud / đang offline - không ghi đè dữ liệu chung.');
+      if (window.App && App.showToast) {
+        App.showToast('Chưa kết nối được máy chủ - thao tác chưa được lưu. Vui lòng tải lại trang và thử lại.', 'error');
+      }
+      return;
+    }
     this.dbRef.set(dataObj).catch((e) => {
       console.warn('Không thể đồng bộ lên cloud (offline?), dữ liệu vẫn được lưu trên máy.', e);
     });
